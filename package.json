@@ -1,0 +1,26 @@
+{
+  "name": "rxflow-orders",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "tokens:css": "node scripts/render-token-css.cjs",
+    "predev": "npm run tokens:css",
+    "dev": "next dev",
+    "prebuild": "npm run tokens:css",
+    "build": "next build",
+    "prestart": "npm run tokens:css",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1",
+    "next": "14.2.5",
+    "react": "^18",
+    "react-dom": "^18"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "typescript": "^5"
+  }
+}
