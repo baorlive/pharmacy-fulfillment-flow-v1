@@ -1,5 +1,17 @@
 # Pharmacist Fulfillment
 
+<p align="center">
+  <a href="public/readme/getnow-preview.webm">
+    <img src="public/readme/getnow-preview-thumbnail.png" alt="RxFlow Orders preview thumbnail" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://rxflow-orders.vercel.app/"><strong>Live Preview</strong></a>
+  ·
+  <a href="public/readme/getnow-preview.webm"><strong>Demo Video (.webm)</strong></a>
+</p>
+
 Pharmacist Fulfillment is a Next.js pharmacy-order operations demo. Inside the UI it is branded as **RxFlow Orders**: a dense split-pane dashboard for receiving, reviewing, packing, and dispatching medication orders with strong visual hierarchy and a token-driven design system.
 
 ## Highlights
@@ -122,6 +134,8 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
+
+Production preview: [https://rxflow-orders.vercel.app/](https://rxflow-orders.vercel.app/)
 
 ## Scripts
 
