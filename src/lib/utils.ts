@@ -5,6 +5,7 @@ export const SHIPPER_ARRIVAL_MS  = 2 * 60 * 1000;
 export const PACKING_ETA_MS      = 2 * 60 * 1000;
 export const COMPLETE_AUTO_MS    = 30 * 60 * 1000;
 export const VERIFY_PAY_LOCK_MS  = 10 * 1000;
+export const MAIN_ACTION_LOCK_MS = 1500;
 
 export const SCANNED_EXPIRY_VISIBLE_STATUSES = new Set<OrderStatus>([
   'preparing', 'ready', 'delivering', 'delivered', 'completed',
@@ -14,13 +15,6 @@ export const fmt = (v: number) => new Intl.NumberFormat('en-US', { style: 'curre
 
 export const payLbl = (s: PayStatus) =>
   ({ paid: 'Paid', cod: 'Paid', unpaid: 'Unpaid' }[s] ?? s);
-
-export const statusLbl = (s: OrderStatus) =>
-  ({
-    new: 'New', preparing: 'Packing', ready: 'Waiting for shipper',
-    delivering: 'Delivering', delivered: 'Delivered', completed: 'Completed',
-    rejected: 'Rejected', cancelled: 'Cancelled', canceled: 'Cancelled',
-  }[s] ?? s);
 
 export function toOrderCode(id: string): string {
   const match = id.match(/\d+/);

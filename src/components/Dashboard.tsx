@@ -20,6 +20,8 @@ const INCOMING_POPUP_VISIBLE_MS = 5000;
 const INCOMING_POPUP_ANIM_OUT_MS = 400;
 const BARCODE_SCAN_STEP_MS = 1100;
 const BARCODE_BETWEEN_MS = 700;
+const TOAST_VISIBLE_MS = 2200;
+const TOAST_ANIM_OUT_MS = 400;
 const DEMO_SOURCE_IDS = ['RX-001', 'RX-002', 'RX-008'];
 
 function buildIncomingOrder(template: Order, existingIds: string[]): Order {
@@ -102,8 +104,8 @@ export default function Dashboard() {
       toastTimerRef.current = setTimeout(() => {
         dispatch({ type: 'HIDE_TOAST' });
         toastTimerRef.current = null;
-      }, 400);
-    }, 2200);
+      }, TOAST_ANIM_OUT_MS);
+    }, TOAST_VISIBLE_MS);
     return () => {
       if (toastTimerRef.current) {
         clearTimeout(toastTimerRef.current);

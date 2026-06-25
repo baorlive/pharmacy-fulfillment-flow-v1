@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RxFlow Dashboard Design System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@100;400;500;600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="rxflow-orders/src/app/tokens/foundation.css">
+<link rel="stylesheet" href="rxflow-orders/src/app/tokens/semantic.css">
+<link rel="stylesheet" href="rxflow-orders/src/app/tokens/component.css">
+<style>
+:root {
+  /* ── Catalog-local supplement ─────────────────────────────────────────────
+     Typography-scale vars for catalog shell and specimen display only.
+     Component specimens use --s-* and --c-* directly.
+  */
+  --cat-leading-heading:  1.08;
+  --cat-leading-tight:    1.1;
+  --cat-leading-snug:     1.15;
+  --cat-leading-prose:    1.25;
+  --cat-leading-body:     1.35;
+  --cat-leading-reading:  1.42;
+  --cat-leading-copy:     1.45;
+  --cat-leading-loose:    1.4;
+  --cat-tracking-tightest: -0.02em;
+  --cat-tracking-tight:   -0.01em;
+  --cat-tracking-tighter: -0.005em;
+  --cat-tracking-xs:       0.02em;
+  --cat-tracking-sm:       0.03em;
+  --cat-tracking-base:     0.04em;
+  --cat-tracking-wide:     0.06em;
+  --cat-tracking-wider:    0.08em;
+  --cat-tracking-widest:   0.1em;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--s-page);
+  color: var(--s-text-primary);
+  font-family: var(--s-font-sans);
+  font-size: var(--s-size-md);
+  -webkit-font-smoothing: antialiased;
+}
+button, input { font: inherit; }
+.ui-icon { width: 1em; height: 1em; display: inline-block; fill: currentColor; vertical-align: -0.125em; flex-shrink: 0; }
+.system-shell { min-height: 100vh; display: grid; grid-template-columns: 280px minmax(0, 1fr); }
+.system-nav {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: auto;
+  background: var(--s-surface);
+  border-right: 1px solid var(--s-border-default);
+  padding: 20px;
+}
+.system-brand { display: grid; gap: var(--s-space-2); padding-bottom: 20px; border-bottom: 1px solid var(--s-border-subtle); }
+.system-brand .logo { font-size: var(--s-size-2xl); flex-wrap: wrap; line-height: var(--s-leading-normal); }
+.system-title { font-size: var(--s-size-sm); color: var(--s-text-tertiary); text-transform: uppercase; letter-spacing: var(--cat-tracking-widest); font-weight: var(--s-weight-bold); }
+.system-nav a {
+  display: block;
+  padding: 9px 0;
+  color: var(--s-text-muted);
+  text-decoration: none;
+  font-size: var(--s-size-md);
+  font-weight: var(--s-weight-semibold);
+  letter-spacing: var(--cat-tracking-xs);
+}
+.system-nav a:hover { color: var(--s-action-primary); }
+.system-content { min-width: 0; }
+.catalog-header {
+  background: var(--s-surface);
+  border-bottom: 1px solid var(--s-border-default);
+  padding: 28px 32px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--s-space-5);
+  align-items: end;
+}
+.catalog-kicker { font-size: var(--s-size-md); font-weight: var(--s-weight-semibold); text-transform: uppercase; letter-spacing: var(--cat-tracking-widest); color: var(--s-text-tertiary); margin-bottom: var(--s-space-2); }
+h1 { margin: 0; font-size: var(--s-size-3xl); line-height: var(--cat-leading-tight); letter-spacing: var(--cat-tracking-tightest); }
+.catalog-sub { margin-top: var(--s-space-2); max-width: 760px; line-height: var(--cat-leading-copy); color: var(--s-text-secondary); }
+.catalog-meta { font-family: var(--s-font-numeric); font-weight: var(--s-weight-semibold); letter-spacing: var(--cat-tracking-sm); color: var(--s-text-muted); text-align: right; }
+.catalog-section { padding: var(--s-space-8); border-bottom: 1px solid var(--s-border-default); }
+.section-head { display: flex; justify-content: space-between; align-items: end; gap: var(--s-space-5); margin-bottom: 18px; }
+h2 { margin: 0; font-size: var(--s-size-2xl); line-height: var(--s-leading-normal); }
+.section-note { margin: 6px 0 0; max-width: 820px; color: var(--s-text-muted); line-height: var(--cat-leading-copy); }
+.panel {
+  background: var(--s-surface);
+  border: 1px solid var(--s-border-default);
+}
+.grid { display: grid; gap: var(--s-space-3); }
+.grid.cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.grid.cols-4 { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.token-row { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: var(--s-space-2) var(--s-space-3); align-items: center; padding: 10px; background: var(--s-surface); border: 1px solid var(--s-border-subtle); min-height: 58px; }
+.swatch { width: 32px; height: var(--c-control-height-xs); border: 1px solid var(--s-border-default); background: var(--swatch); }
+.token-name { font-weight: var(--s-weight-semibold); color: var(--s-text-primary); word-break: break-word; }
+.token-use { margin-top: 2px; font-size: var(--s-size-sm); color: var(--s-text-tertiary); line-height: var(--s-leading-normal); }
+.token-value { grid-column: 2; font-family: var(--s-font-numeric); color: var(--s-text-muted); font-size: var(--s-size-md); text-align: left; white-space: normal; word-break: break-word; }
+/* Type scale strip */
+.type-scale { border: 1px solid var(--s-border-default); background: var(--s-surface); }
+.type-scale-row { display: grid; grid-template-columns: 172px 1fr; border-bottom: 1px solid var(--s-border-subtle); }
+.type-scale-row:last-child { border-bottom: none; }
+.type-scale-meta { display: flex; flex-direction: column; gap: var(--s-space-1); padding: var(--s-space-3) var(--s-space-4); background: var(--s-surface-raised); border-right: 1px solid var(--s-border-subtle); justify-content: center; }
+.type-scale-token { font-family: var(--s-font-numeric); font-size: var(--s-size-sm); color: var(--s-text-primary); font-weight: var(--s-weight-semibold); }
+.type-scale-px { font-family: var(--s-font-numeric); font-size: var(--s-size-sm); color: var(--s-text-muted); }
+.type-scale-sample { padding: var(--s-space-3) var(--s-space-4); color: var(--s-text-primary); line-height: var(--s-leading-none); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: var(--s-weight-regular); }
+.type-subhead { margin: var(--s-space-5) var(--s-space-0) var(--s-space-2); font-size: var(--s-size-md); font-weight: var(--s-weight-semibold); text-transform: uppercase; letter-spacing: var(--s-tracking-normal); color: var(--s-text-tertiary); }
+.type-subnote { margin: calc(0px - var(--s-space-1)) var(--s-space-0) var(--s-space-3); max-width: 760px; font-size: var(--s-size-md); line-height: var(--s-leading-body); color: var(--s-text-muted); }
+/* Type specimens */
+.type-specimen { padding: var(--s-space-4); border: 1px solid var(--s-border-subtle); background: var(--s-surface); display: grid; gap: var(--s-space-2); }
+.type-label { font-size: var(--s-size-sm); color: var(--s-text-tertiary); text-transform: uppercase; letter-spacing: var(--s-tracking-normal); font-weight: var(--s-weight-bold); }
+.type-display  { font-size: var(--s-size-3xl); font-weight: var(--s-weight-strong);   line-height: var(--s-leading-none);   letter-spacing: var(--s-tracking-normal); }
+.type-buyer    { font-size: var(--s-size-3xl); font-weight: var(--s-weight-semibold); line-height: var(--s-leading-none);   letter-spacing: var(--s-tracking-normal); }
+.type-heading  { font-size: var(--s-size-2xl); font-weight: var(--s-weight-bold);     line-height: var(--s-leading-normal); letter-spacing: var(--s-tracking-normal); }
+.type-title    { font-size: var(--s-size-xl);  font-weight: var(--s-weight-strong);   line-height: var(--s-leading-normal); letter-spacing: var(--s-tracking-normal); }
+.type-body     { font-size: var(--s-size-md);  font-weight: var(--s-weight-regular);  line-height: var(--s-leading-body);   letter-spacing: var(--s-tracking-normal); color: var(--s-text-secondary); }
+.type-label-sample { font-size: var(--s-size-md); font-weight: var(--s-weight-semibold); text-transform: uppercase; letter-spacing: var(--s-tracking-normal); color: var(--s-text-tertiary); }
+.type-micro    { font-size: var(--s-size-sm);  font-weight: var(--s-weight-medium);   color: var(--s-text-tertiary); text-transform: uppercase; letter-spacing: var(--s-tracking-normal); }
+.type-mono     { font-family: var(--s-font-numeric); font-size: var(--s-size-md); letter-spacing: var(--s-tracking-normal); }
+.type-mono-lg  { font-family: var(--s-font-numeric); font-size: var(--s-size-2xl); font-weight: var(--s-weight-bold); letter-spacing: var(--s-tracking-normal); }
+.type-preview-cell { min-width: 320px; color: var(--s-text-primary); }
+.type-preview-meta { display: grid; gap: var(--s-space-1); color: var(--s-text-muted); font-size: var(--s-size-sm); line-height: var(--s-leading-normal); }
+.type-preview-token { font-family: var(--s-font-numeric); color: var(--s-text-primary); font-weight: var(--s-weight-semibold); }
+/* Scale / reference tables */
+.scale-table { width: 100%; border-collapse: collapse; background: var(--s-surface); border: 1px solid var(--s-border-default); }
+.scale-table th, .scale-table td { border-bottom: 1px solid var(--s-border-subtle); padding: var(--s-space-2) var(--s-space-3); text-align: left; vertical-align: top; }
+.scale-table th { font-size: var(--s-size-sm); text-transform: uppercase; letter-spacing: var(--cat-tracking-widest); color: var(--s-text-tertiary); background: var(--s-surface-raised); }
+.scale-table td:last-child { font-family: var(--s-font-numeric); color: var(--s-text-muted); }
+/* ── Component CSS: mirrors globals.css exactly ──────────────────────────── */
+.topbar {
+  min-height: var(--c-topbar-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--s-space-4) var(--s-space-8);
+  background: var(--s-surface);
+  border-bottom: 1px solid var(--s-border-default);
+}
+.topbar-left { display: flex; align-items: center; gap: var(--s-space-4); }
+.logo { display: flex; align-items: center; gap: var(--s-space-2); color: var(--s-text-display); letter-spacing: var(--s-tracking-normal); }
+.logo-dot { width: var(--s-space-2); height: var(--s-space-2); border-radius: 50%; background: var(--s-action-primary); flex-shrink: 0; }
+.logo-strong { font-weight: var(--s-weight-bold); color: var(--s-text-display); }
+.logo-brand { color: var(--s-action-primary); font-weight: var(--s-weight-extrabold); }
+.logo-core { color: var(--s-text-display); font-weight: var(--s-weight-extrabold); }
+.topbar-right { display: flex; align-items: center; gap: var(--s-space-4); }
+.topbar-icon-btn {
+  width: var(--c-square-control-size);
+  height: var(--c-square-control-size);
+  min-width: var(--c-square-control-size);
+  border: 1px solid var(--s-border-default);
+  background: var(--s-surface);
+  color: var(--s-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--s-space-0);
+  cursor: pointer;
+  transition: background var(--s-motion-fast), border-color var(--s-motion-fast), color var(--s-motion-fast);
+}
+.topbar-icon-btn:hover { background: var(--s-surface-disabled); border-color: var(--s-border-strong); color: var(--s-text-secondary); }
+.topbar-icon-btn:focus-visible { outline: none; box-shadow: 0 0 0 calc(var(--c-focus-size) + var(--c-focus-gap)) var(--s-focus-ring); }
+.topbar-icon-btn .ui-icon { width: var(--c-icon-lg); height: var(--c-icon-lg); fill: none; stroke: currentColor; stroke-width: var(--c-icon-stroke-lg); stroke-linecap: round; stroke-linejoin: round; }
+.session-owner { display: grid; grid-template-columns: 1fr; gap: var(--s-space-1) var(--s-space-0); align-items: center; justify-items: end; text-align: right; padding: var(--s-space-1) var(--s-space-2); border: none; background: var(--s-surface-raised); }
+.session-owner-label { font-family: var(--s-font-sans); font-size: var(--s-size-md); color: var(--s-text-tertiary); letter-spacing: var(--s-tracking-normal); }
+.session-owner-name { font-size: var(--s-size-2xl); font-weight: var(--s-weight-upper); color: var(--s-text-primary); letter-spacing: var(--s-tracking-normal); line-height: var(--s-leading-none); }
+.incoming-receive-toggle {
+  height: var(--c-control-height-compact);
+  border: none;
+  background: var(--s-surface-raised);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-space-2);
+  padding: var(--s-space-1) var(--s-space-2);
+  cursor: pointer;
+  transition: background var(--s-motion-fast);
+}
+.incoming-receive-toggle:hover { background: var(--s-surface); }
+.incoming-receive-toggle:focus-visible { outline: none; box-shadow: 0 0 0 calc(var(--c-focus-size) + var(--c-focus-gap)) var(--s-focus-ring); }
+.incoming-receive-track { width: var(--c-switch-track-width); height: var(--c-switch-track-height); background: var(--s-surface-disabled); position: relative; flex-shrink: 0; transition: background var(--s-motion-fast); }
+.incoming-receive-thumb { width: var(--c-switch-thumb-size); height: var(--c-switch-thumb-size); border: 1px solid var(--s-border-strong); background: var(--s-surface); position: absolute; top: var(--c-switch-thumb-offset); left: var(--c-switch-thumb-offset); transition: transform var(--s-motion-fast), background var(--s-motion-fast), border-color var(--s-motion-fast); }
+.incoming-receive-copy { display: inline-flex; align-items: center; gap: var(--s-space-2); line-height: var(--s-leading-none); white-space: nowrap; }
+.incoming-receive-label { font-family: var(--s-font-sans); font-size: var(--s-size-md); color: var(--s-text-muted); letter-spacing: var(--s-tracking-normal); }
+.incoming-receive-state { font-family: var(--s-font-sans); font-size: var(--s-size-md); font-weight: var(--s-weight-bold); color: var(--s-text-muted); letter-spacing: var(--s-tracking-normal); }
+.incoming-receive-toggle.is-on .incoming-receive-track { background: var(--s-action-subtle); }
+.incoming-receive-toggle.is-on .incoming-receive-thumb { transform: translateX(var(--c-switch-thumb-translate)); border-color: var(--s-action-primary); background: var(--s-action-primary); }
+.incoming-receive-toggle.is-on .incoming-receive-state { color: var(--s-action-primary); }
+.incoming-receive-toggle.is-off .incoming-receive-state { color: var(--s-text-tertiary); }
+.topbar-mid { display: flex; align-items: stretch; gap: var(--s-space-0); overflow: visible; background: var(--s-surface); height: 100%; min-width: 0; }
+.stat-chip, .stat-dropdown-trigger {
+  flex: 0 0 auto;
+  width: var(--c-chip-filter-width);
+  min-width: var(--c-chip-filter-width);
+  height: 100%;
+  border: none;
+  border-right: 1px solid var(--s-border-default);
+  border-bottom: var(--c-active-indicator-size) solid transparent;
+  background: var(--s-surface);
+  color: var(--s-text-tertiary);
+  font-family: var(--s-font-sans);
+  font-size: var(--s-size-md);
+  font-weight: var(--s-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--s-tracking-normal);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-space-2);
+  padding: var(--s-space-0) var(--s-space-4);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background var(--s-motion-fast), color var(--s-motion-fast);
+}
+.stat-chip:hover, .stat-dropdown-trigger:hover { background: var(--s-page); color: var(--s-text-muted); }
+.stat-chip.active, .stat-dropdown-wrap.active .stat-dropdown-trigger { color: var(--s-text-inverse); background: var(--s-action-primary); border-bottom-color: var(--s-action-hover); box-shadow: inset 0 calc(0px - var(--c-active-indicator-size)) 0 var(--s-action-hover); }
+.stat-chip-badge { display: inline-flex; align-items: center; justify-content: center; height: var(--c-label-height); padding: var(--s-space-0) var(--s-space-2); border: 1px solid var(--s-border-default); color: var(--s-action-primary); background: var(--s-surface-raised); font-family: var(--s-font-numeric); font-size: var(--s-size-md); line-height: var(--s-leading-none); letter-spacing: var(--s-tracking-normal); }
+.stat-chip.active .stat-chip-badge, .stat-dropdown-wrap.active .stat-chip-badge { color: var(--s-action-primary); border-color: var(--s-action-primary); background: var(--s-surface); }
+.stat-dropdown-wrap { position: relative; display: flex; flex-direction: column; min-width: var(--c-chip-dropdown-min-width); }
+.stat-dropdown-trigger { justify-content: space-between; width: 100%; }
+.stat-dropdown-caret { display: inline-block; width: var(--c-chip-dropdown-caret-size); height: var(--c-chip-dropdown-caret-size); background: center / var(--c-chip-dropdown-caret-size) var(--c-chip-dropdown-caret-size) no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%23868C98' d='M1.5 3.25 5 6.75l3.5-3.5.85.85L5 8.45.65 4.1z'/%3E%3C/svg%3E"); transition: transform var(--s-motion-fast) var(--s-motion-ease-out); flex-shrink: 0; }
+.stat-dropdown-wrap.active .stat-dropdown-caret { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%23FFFFFF' d='M1.5 3.25 5 6.75l3.5-3.5.85.85L5 8.45.65 4.1z'/%3E%3C/svg%3E"); }
+.stat-dropdown-wrap.open .stat-dropdown-caret { transform: rotate(180deg); }
+.stat-dropdown-menu { position: absolute; top: calc(100% + var(--s-space-1)); left: -1px; width: calc(100% + 2px); border: 1px solid var(--s-border-default); background: var(--s-surface); padding: var(--s-space-1); z-index: var(--c-z-dropdown); display: none; }
+.stat-dropdown-wrap.open .stat-dropdown-menu { display: block; }
+.stat-dropdown-item { width: 100%; height: var(--c-pill-interactive-height); border: none; background: var(--s-surface); color: var(--s-text-muted); font-family: var(--s-font-sans); font-size: var(--s-size-md); font-weight: var(--s-weight-semibold); text-transform: uppercase; letter-spacing: var(--s-tracking-normal); display: inline-flex; align-items: center; justify-content: space-between; padding: var(--s-space-0) var(--s-space-2); cursor: pointer; }
+.stat-dropdown-item:hover { background: var(--s-page); color: var(--s-text-secondary); }
+.stat-dropdown-item.active { background: var(--s-action-subtle); color: var(--s-action-primary); }
+.stat-dropdown-item.active .stat-chip-badge { color: var(--s-action-primary); border-color: var(--s-action-primary); background: var(--s-surface); }
+/* ── Catalog layout helpers ───────────────────────────────────────────────── */
+.component-stage { display: grid; gap: var(--s-space-4); }
+.mini-workspace { display: grid; grid-template-columns: minmax(380px, 1fr) minmax(320px, 36vw); background: var(--s-page); border: 1px solid var(--s-border-default); min-height: 700px; }
+.module-workspace { display: grid; grid-template-columns: minmax(400px, 1fr) minmax(var(--c-panel-detail-min-width), var(--c-panel-detail-width)); grid-template-rows: auto minmax(700px, 1fr); gap: 0; background: var(--s-page); border: 1px solid var(--s-border-default); overflow: hidden; }
+.module-workspace .module-block:first-child { grid-column: 1 / -1; }
+.module-workspace .module-block:nth-child(2) { min-width: 0; }
+.module-workspace .module-block:nth-child(3) { min-width: var(--c-panel-detail-min-width); }
+.module-workspace .module-block:nth-child(2) .list-panel,
+.module-workspace .module-block:nth-child(3) .detail-panel { width: 100%; min-width: 0; }
+.module-block { border: none; border-bottom: 1px solid var(--s-border-default); background: var(--s-surface); overflow: hidden; display: flex; flex-direction: column; min-height: 0; }
+.module-block > .component-stage,
+.module-block > .list-panel,
+.module-block > .detail-panel { flex: 1 1 auto; min-height: 0; }
+.module-block + .module-block { border-right: 1px solid var(--s-border-default); }
+.module-block:last-child { border-right: none; }
+.module-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-space-3); padding: var(--s-space-3) var(--s-space-4); border-bottom: 1px solid var(--s-border-default); }
+.module-title { font-size: var(--s-size-md); font-weight: var(--s-weight-semibold); text-transform: uppercase; letter-spacing: var(--s-tracking-normal); color: var(--s-text-tertiary); }
+.module-paths { font-family: var(--s-font-numeric); font-size: var(--s-size-sm); color: var(--s-text-disabled); letter-spacing: var(--s-tracking-normal); text-align: right; }
+.list-panel { min-width: 0; display: flex; flex-direction: column; overflow: hidden; background: var(--s-page); }
+.list-scroll { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; padding-left: var(--s-space-1); scrollbar-width: thin; scrollbar-color: var(--s-scrollbar-thumb) transparent; }
+*::-webkit-scrollbar { width: var(--c-scrollbar-w); height: var(--c-scrollbar-w); }
+*::-webkit-scrollbar-thumb { background: var(--s-scrollbar-thumb); border-radius: var(--s-radius-none); }
+.list-empty-state { padding: var(--s-space-10); text-align: center; color: var(--s-text-disabled); font-size: var(--s-size-md); }
+.list-filters { position: relative; z-index: var(--c-z-filters); height: var(--c-control-height); padding: var(--s-space-0) var(--s-space-8); border-bottom: 1px solid var(--s-border-default); background: var(--s-surface); display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: stretch; overflow: visible; }
+.list-filters::before { content: ''; position: absolute; top: 0; left: 0; width: var(--s-space-8); height: 100%; border-right: 1px solid var(--s-border-subtle); background-color: var(--s-hatch-bg); background-image: repeating-linear-gradient(135deg, var(--s-hatch-stripe) 0 1px, transparent 1px 6px); pointer-events: none; }
+.list-filters::after { content: ''; position: absolute; top: 0; right: 0; width: var(--s-space-8); height: 100%; border-left: 1px solid var(--s-border-subtle); background-color: var(--s-hatch-bg); background-image: repeating-linear-gradient(135deg, var(--s-hatch-stripe) 0 1px, transparent 1px 6px); pointer-events: none; }
+.list-search { height: 100%; max-height: var(--c-control-height); padding: var(--s-space-0); border: none; border-left: 1px solid var(--s-border-default); background: var(--s-surface); display: flex; align-items: center; justify-content: center; flex: 0 0 var(--c-square-filter-control-size); width: var(--c-square-filter-control-size); max-width: var(--c-square-filter-control-size); min-width: var(--c-square-filter-control-size); cursor: pointer; overflow: hidden; transition: none; }
+.list-search.is-expanded { flex: 0 0 auto; width: var(--search-expanded-width, min(var(--c-search-expanded), var(--c-search-fallback-width))); max-width: var(--search-expanded-width, min(var(--c-search-expanded), var(--c-search-fallback-width))); padding: var(--s-space-0) var(--s-space-4); cursor: text; }
+.search-wrap { position: relative; width: 100%; height: var(--c-control-height-compact); }
+.list-search:not(.is-expanded) .search-wrap { width: var(--c-square-control-size); }
+.search-icon { position: absolute; left: var(--c-search-icon-offset); top: 50%; transform: translateY(-50%); color: var(--s-text-tertiary); pointer-events: none; display: inline-flex; align-items: center; justify-content: center; transition: none; }
+.list-search:not(.is-expanded) .search-icon { left: 50%; transform: translate(-50%, -50%); color: var(--s-text-muted); }
+.search-icon .ui-icon { width: var(--c-icon-sm); height: var(--c-icon-sm); }
+.search-input { width: 100%; height: var(--c-control-height-compact); padding: var(--s-space-0) var(--s-space-3) var(--s-space-0) var(--s-space-8); border: none; background: var(--s-surface); font-family: var(--s-font-sans); font-size: var(--s-size-md); color: var(--s-text-primary); outline: none; opacity: 0; pointer-events: none; transition: none; }
+.list-search.is-expanded .search-input { opacity: 1; pointer-events: auto; }
+.search-input::placeholder { color: var(--s-text-disabled); }
+.search-input:focus { box-shadow: none; }
+.order-row { position: relative; display: grid; padding: var(--c-row-padding); padding-right: calc(var(--s-space-8) - var(--list-scrollbar-width, var(--c-scrollbar-w))); cursor: pointer; transition: background var(--s-motion-fast), border-color var(--s-motion-fast); border-bottom: 1px solid var(--s-border-default); background: var(--c-row-bg); min-height: var(--c-row-min-height); }
+.order-row:hover { background: var(--s-surface); }
+.order-row.active { z-index: var(--c-z-row-active); background: var(--s-surface); border-right: none; box-shadow: inset calc(0px - var(--c-row-active-indicator-width)) 0 0 var(--s-action-primary); }
+.order-row.is-newly-inserted { animation: order-row-enter var(--s-motion-enter) var(--s-motion-spring); }
+.row-body { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); gap: var(--s-space-4); width: 100%; align-self: start; }
+.row-left { min-width: 0; display: grid; gap: var(--s-space-1); align-content: start; overflow: hidden; }
+.row-right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; min-width: 0; height: 100%; }
+.row-kicker { display: flex; align-items: baseline; justify-content: flex-start; gap: var(--s-space-2); }
+.row-kicker-right { align-self: flex-end; justify-content: flex-end; align-items: flex-end; width: fit-content; margin-bottom: var(--s-space-2); display: grid; gap: var(--s-space-1); text-align: right; }
+.row-code { font-size: var(--s-size-md); color: var(--s-text-tertiary); font-family: var(--s-font-sans); letter-spacing: var(--s-tracking-normal); text-transform: uppercase; }
+.row-created { font-size: var(--s-size-xl); color: var(--s-text-tertiary); font-family: var(--s-font-numeric); letter-spacing: var(--s-tracking-normal); text-transform: uppercase; }
+.row-name-line { display: flex; align-items: flex-end; gap: var(--s-space-2); min-width: 0; }
+.row-name { font-size: var(--s-size-3xl); line-height: var(--s-leading-none); font-weight: var(--s-weight-strong); color: var(--s-text-primary); letter-spacing: var(--s-tracking-normal); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row-note { width: fit-content; max-width: 100%; font-size: var(--s-size-md); color: var(--s-text-secondary); line-height: var(--s-leading-normal); display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+.row-item-summary { display: inline-flex; align-items: center; justify-content: flex-start; text-align: left; gap: var(--s-space-2); padding-top: var(--s-space-1); min-width: 0; width: fit-content; max-width: min(var(--c-row-summary-max-width), 100%); overflow: hidden; }
+.row-item-label { display: inline; font-family: var(--s-font-sans); font-size: var(--s-size-md); color: var(--s-text-tertiary); letter-spacing: var(--s-tracking-normal); white-space: nowrap; }
+.row-item-count-badge { display: inline-flex; align-items: center; justify-content: center; min-width: var(--c-label-height); height: var(--c-label-height); padding: var(--s-space-0) var(--c-badge-padding-x); background: var(--s-info-subtle); color: var(--s-action-primary); font-family: var(--s-font-sans); font-size: var(--s-size-md); font-weight: var(--s-weight-bold); line-height: var(--s-leading-none); flex-shrink: 0; }
+.row-item-summary-text { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; overflow: hidden; min-width: 0; max-width: 100%; line-height: var(--s-leading-normal); text-align: left; font-size: var(--s-size-md); color: var(--s-text-muted); }
+.row-item-chip { display: inline; }
+.row-item-sep { display: inline; font-family: var(--s-font-sans); font-size: var(--s-size-sm); color: var(--s-text-disabled); margin: var(--s-space-0) var(--s-space-2); }
+.row-item-chip-name { font-family: var(--s-font-sans); font-size: var(--s-size-md); font-weight: var(--s-weight-bold); color: var(--s-text-secondary); letter-spacing: var(--s-tracking-normal); }
+.row-item-summary-text .row-item-chip-name { display: inline-block; padding: var(--s-space-1) var(--s-space-1); background: var(--s-scrollbar-thumb); color: var(--s-text-secondary); line-height: var(--s-leading-normal); }
+.row-item-chip-qty { font-family: var(--s-font-sans); font-size: var(--s-size-md); font-weight: var(--s-weight-semibold); color: var(--s-text-tertiary); letter-spacing: var(--s-tracking-normal); }
+.row-item-chip-more .row-item-chip-name { font-family: var(--s-font-sans); font-size: var(--s-size-sm); font-weight: var(--s-weight-bold); color: var(--s-text-tertiary); letter-spacing: var(--s-tracking-normal); text-transform: uppercase; background: var(--s-surface-disabled); padding: var(--s-space-1) var(--s-space-2); line-height: var(--s-leading-normal); }
+.row-price-line { display: inline-flex; align-items: center; gap: var(--s-space-2); width: fit-content; margin-top: var(--s-space-2); }
+.row-total { font-size: var(--s-size-2xl); color: var(--s-text-primary); font-family: var(--s-font-numeric); font-weight: var(--s-weight-bold); line-height: var(--s-leading-none); letter-spacing: var(--s-tracking-normal); }
+.row-stage-meta { margin-top: auto; margin-bottom: var(--s-space-0); display: inline-flex; flex-direction: column; align-items: flex-end; gap: var(--s-space-1); width: fit-content; }
+.row-rx-badge { display: inline-flex; align-items: center; justify-content: center; height: var(--c-label-height); padding: var(--s-space-0) var(--c-badge-padding-x); gap: var(--c-badge-gap); font-family: var(--s-font-sans); font-size: var(--s-size-md); font-weight: var(--s-weight-semibold); letter-spacing: var(--s-tracking-normal); text-transform: uppercase; background: var(--s-info-subtle); color: var(--s-action-primary); line-height: var(--s-leading-none); white-space: nowrap; }
+.row-rx-badge .ui-icon { width: var(--c-icon-sm); height: var(--c-icon-sm); }
+.row-status-badge { position: relative; display: inline-block; font-size: var(--s-size-md); font-weight: var(--s-weight-regular); color: var(--s-text-tertiary); font-family: var(--s-font-sans); text-transform: uppercase; letter-spacing: var(--s-tracking-normal); white-space: nowrap; border: none; background: transparent; padding: var(--s-space-0); }
+.row-status-badge.status-new, .row-status-badge.status-order-review, .row-status-badge.status-packing { display: inline-flex; align-items: center; height: var(--c-label-height); padding: var(--s-space-0) var(--s-space-2); font-size: var(--s-size-md); font-weight: var(--s-weight-bold); letter-spacing: var(--s-tracking-normal); line-height: var(--s-leading-none); min-width: 0; }
+.row-status-badge.status-new { background: var(--s-action-primary); color: var(--s-text-inverse); }
+.row-status-badge.status-order-review { background: var(--s-status-review-bg); color: var(--s-status-review-text); }
+.row-status-badge.status-packing { background: var(--s-status-packing-bg); color: var(--s-status-packing-text); }
+.row-status-badge.status-ready-to-ship, .row-status-badge.status-delivering, .row-status-badge.status-delivered, .row-status-badge.status-completed, .row-status-badge.status-cancelled, .row-status-badge.status-canceled, .row-status-badge.status-waiting-payment { display: inline; height: auto; padding: var(--s-space-0); background: transparent; font-weight: var(--s-weight-bold); }
+.row-status-badge.status-waiting-payment { color: var(--s-warning-action-text); font-size: var(--s-size-md); }
+.row-status-badge.status-ready-to-ship { color: var(--s-action-primary); }
+.row-status-badge.status-delivering { color: var(--s-action-primary); }
+.row-status-badge.status-delivered { color: var(--s-success); }
+.row-status-badge.status-completed { color: var(--s-text-muted); }
+.row-status-badge.status-cancelled { color: var(--s-error-text); }
+.row-status-badge.status-canceled { color: var(--s-error-text); }
+.row-status-badge.status-packing::after { content: "..."; display: inline-block; font-size: var(--s-size-md); line-height: var(--s-leading-none); white-space: nowrap; margin-left: var(--s-space-1); width: 0.9em; overflow: hidden; letter-spacing: var(--s-tracking-normal); animation: packing-dots 1.1s steps(4, end) infinite; }
+.pay-badge { display: inline-flex; align-items: center; justify-content: center; height: var(--c-label-height); padding: var(--s-space-0) var(--c-badge-padding-x); font-family: var(--s-font-sans); font-size: var(--s-size-md); font-weight: var(--s-weight-semibold); text-transform: uppercase; letter-spacing: var(--s-tracking-normal); border: none; line-height: var(--s-leading-none); }
+.pay-badge.paid, .pay-badge.cod { background: var(--s-success-pale-bg); color: var(--s-success-pale-text); }
+.pay-badge.unpaid { background: var(--s-warning-pale-bg); color: var(--s-warning-pale-text); }
+.msg-badge { min-width: var(--c-label-height); height: var(--c-label-height); padding: var(--s-space-0) var(--c-badge-padding-x); background: var(--s-error); color: var(--s-text-inverse); font-size: var(--s-size-sm); font-weight: var(--s-weight-semibold); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; font-family: var(--s-font-sans); line-height: var(--s-leading-none); letter-spacing: var(--s-tracking-normal); text-transform: uppercase; gap: var(--s-space-1); }
+.msg-badge .ui-icon { width: var(--c-icon-xs); height: var(--c-icon-xs); }
+.detail-panel { width: var(--c-panel-detail-width); min-width: var(--c-panel-detail-min-width); display: flex; flex-direction: column; overflow: hidden; background: var(--s-surface); border-left: 1px solid var(--s-border-default); }
+.detail-empty-state { flex: 1; display: flex; align-items: center; justify-content: center; border-left: 1px solid var(--s-border-default); background: var(--s-surface); text-align: center; padding: var(--s-space-6); }
+.detail-empty-copy { font-family: var(--s-font-sans); font-size: var(--s-size-md); color: var(--s-text-tertiary); letter-spacing: var(--s-tracking-normal); text-transform: uppercase; }
+.detail-scroll { flex: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--s-scrollbar-thumb) transparent; background: var(--s-surface); }
+.detail-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-space-0); padding: var(--s-space-0) var(--s-space-8); background: var(--s-surface); position: relative; flex-shrink: 0; z-index: 2; }
+.detail-tabs::after { content: ''; position: absolute; bottom: 0; left: var(--s-space-8); right: var(--s-space-8); height: 1px; background: var(--s-border-default); }
+.detail-tabs::before { content: ''; position: absolute; top: 100%; left: 0; right: 0; height: var(--c-scroll-shadow-height); background: radial-gradient(ellipse 60% 100% at 50% 0%, var(--s-scroll-shadow) 0%, transparent 100%); pointer-events: none; opacity: 0; transition: opacity var(--s-motion-subtle) var(--s-motion-ease-inout); }
+.detail-tabs.scroll-shadow::before { opacity: 1; }
+.detail-tab { height: var(--c-control-height); border: none; border-top: 1px solid var(--s-border-default); border-right: 1px solid var(--s-border-default); border-bottom: var(--c-active-indicator-size) solid transparent; background: var(--s-surface); color: var(--s-text-tertiary); font-family: var(--s-font-sans); font-size: var(--s-size-md); font-weight: var(--s-weight-semibold); text-transform: uppercase; letter-spacing: var(--s-tracking-normal); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: var(--s-space-2); transition: background var(--s-motion-fast), color var(--s-motion-fast); }
+.detail-tab:first-child { border-left: 1px solid var(--s-border-default); }
+.detail-tab.active { color: var(--s-text-inverse); border-bottom-color: var(--s-action-hover); background: var(--s-action-primary); box-shadow: inset 0 calc(0px - var(--c-active-indicator-size)) 0 var(--s-action-hover); }
+.detail-tab:hover:not(.active) { background: var(--s-page); color: var(--s-text-muted); }
+.detail-tab-badge { font-family: var(--s-font-numeric); font-size: var(--s-size-md); height: var(--c-label-height); padding: var(--s-space-0) var(--s-space-2); min-width: var(--c-label-tab-min-width); text-align: center; border: 1px solid var(--s-border-default); color: var(--s-text-muted); background: var(--s-surface-raised); }
+.detail-tab-badge.is-alert { color: var(--s-text-inverse); border-color: var(--s-error); background: var(--s-error); }
+.detail-tab.active .detail-tab-badge { color: var(--s-action-primary); border-color: var(--s-action-primary); background: var(--s-surface); }
+.detail-tab.active .detail-tab-badge.is-alert { color: var(--s-text-inverse); border-color: var(--s-error); background: var(--s-error); }
+.tab-pane { display: none; }
+.tab-pane.active { display: block; padding: var(--s-space-8) var(--s-space-8) var(--s-space-2); }
+.buyer-card { padding: var(--s-space-8) var(--s-space-8) var(--s-space-0); background: var(--s-surface); flex-shrink: 0; }
+.buyer-identity-group { margin: var(--s-space-0); background: linear-gradient(180deg, var(--s-surface) 0%, var(--s-surface-raised) 100%); }
+.buyer-row { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-space-2); margin-bottom: var(--s-space-2); }
+.buyer-id { font-size: var(--s-size-xl); color: var(--s-text-tertiary); font-family: var(--s-font-numeric); letter-spacing: var(--s-tracking-normal); text-transform: uppercase; }
+.buyer-name-phone { display: flex; align-items: baseline; gap: var(--s-space-3); flex-wrap: wrap; margin-bottom: var(--s-space-2); font-family: var(--s-font-sans); font-size: var(--s-size-3xl); font-weight: var(--s-weight-semibold); letter-spacing: var(--s-tracking-normal); line-height: var(--s-leading-none); }
+.buyer-name { font: inherit; color: var(--s-text-primary); }
+.buyer-name-dot { font: inherit; color: var(--s-text-tertiary); line-height: var(--s-leading-none); }
+.buyer-phone-inline { font: inherit; font-weight: var(--s-weight-thin); color: var(--s-text-primary); white-space: nowrap; }
+.buyer-history-actions { margin: var(--s-space-0) var(--s-space-0) var(--s-space-2); }
+.buyer-meta-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-space-2) var(--s-space-3); padding: var(--s-space-4) var(--s-space-0); margin-top: var(--s-space-0); }
+.binfo { display: flex; flex-direction: column; gap: var(--s-space-1); }
+.binfo-label { font-size: var(--s-size-md); font-family: var(--s-font-sans); color: var(--s-text-tertiary); letter-spacing: var(--s-tracking-normal); margin-bottom: var(--s-space-2); }
+.binfo-val { font-size: var(--s-size-xl); color: var(--s-text-secondary); font-weight: var(--s-weight-semibold); line-height: var(--s-leading-normal); }
+.binfo.body .binfo-val { font-family: var(--s-font-sans); font-size: var(--s-size-md); font-weight: var(--s-weight-medium); line-height: var(--s-leading-body); color: var(--s-text-secondary); letter-spacing: var(--s-tracking-normal); }
+.binfo.shipping-by .binfo-val { font-weight: var(--s-weight-semibold); color: var(--s-text-primary); }
+.section-header { display: flex; align-items: center; justify-content: space-between; padding: var(--s-space-0) var(--s-space-0) var(--s-space-2); }
+.section-title { font-size: var(--s-size-md); font-family: var(--s-font-sans); font-weight: var(--s-weight-semibold); text-transform: uppercase; letter-spacing: var(--s-tracking-normal); color: var(--s-text-tertiary); }
+.unread-count { font-family: var(--s-font-sans); font-size: var(--s-size-md); font-weight: var(--s-weight-semibold); background: var(--s-action-primary); color: var(--s-text-inverse); padding: var(--s-space-1) var(--s-space-2); }
+.messages-section { border-bottom: 1px solid var(--s-border-subtle); background: var(--s-surface); }
+.messages-list { margin: var(--s-space-0); padding: var(--s-space-0); display: grid; gap: var(--s-space-0); }
+.msg-bubble { display: grid; gap: var(--s-space-2); padding: var(--s-space-3) var(--s-space-0); border-bottom: 1px solid var(--s-border-subtle); }
+.msg-bubble.is-own { justify-items: end; text-align: right; }
+.msg-bubble.is-own .msg-meta { justify-content: flex-end; }
+.msg-bubble.is-own .msg-text { max-width: var(--c-message-own-max-width); }
+.msg-meta { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-space-3); }
+.msg-sender { font-size: var(--s-size-sm); font-family: var(--s-font-sans); font-weight: var(--s-weight-semibold); text-transform: uppercase; letter-spacing: var(--s-tracking-normal); color: var(--s-text-tertiary); }
+.msg-sender.from-buyer { color: var(--s-action-primary); }
+.msg-time { font-size: var(--s-size-sm); color: var(--s-text-disabled); font-family: var(--s-font-sans); letter-spacing: var(--s-tracking-normal); white-space: nowrap; }
+.msg-text { font-size: var(--s-size-md); color: var(--s-text-secondary); line-height: var(--s-leading-body); padding: var(--s-space-0); border: none; background: transparent; }
+.msg-text.from-buyer { color: var(--s-text-primary); font-weight: var(--s-weight-bold); }
+.msg-text.unread { color: var(--s-action-primary); font-weight: var(--s-weight-medium); }
+.msg-empty { padding: var(--s-space-3) var(--s-space-0); font-size: var(--s-size-md); font-family: var(--s-font-sans); color: var(--s-text-disabled); text-transform: uppercase; letter-spacing: var(--s-tracking-normal); }
+.msg-input-row { padding: var(--s-space-3) var(--s-space-0) var(--s-space-0); margin-top: var(--s-space-3); display: grid; grid-template-columns: 1fr auto; gap: var(--s-space-2); }
+.msg-input { width: 100%; height: var(--c-control-height); padding: var(--s-space-0) var(--c-input-padding-x); border: 1px solid var(--s-border-default); background: var(--s-surface); font-family: var(--s-font-sans); font-size: var(--s-size-md); color: var(--s-text-primary); outline: none; transition: border-color var(--s-motion-fast), box-shadow var(--s-motion-fast); }
+.msg-input:focus { border-color: var(--s-text-muted); box-shadow: 0 0 0 1px var(--s-text-disabled); }
+.msg-input::placeholder { color: var(--s-text-disabled); }
+.msg-send-btn { height: var(--c-control-height); min-width: var(--c-control-send-min-width); padding: var(--s-space-0) var(--s-space-4); background: var(--s-action-primary); color: var(--s-text-inverse); border: none; font-size: var(--s-size-md); font-weight: var(--s-weight-semibold); text-transform: uppercase; cursor: pointer; font-family: var(--s-font-sans); transition: background var(--s-motion-fast); flex-shrink: 0; }
+.msg-send-btn:hover { background: var(--s-action-hover); }
+.msg-inline-icon { display: inline-flex; align-items: center; vertical-align: text-bottom; margin-left: var(--s-space-1); }
+.msg-inline-icon .ui-icon { width: var(--c-icon-inline); height: var(--c-icon-inline); }
+.user-note-card { margin: var(--s-space-0); padding: var(--s-space-0) var(--s-space-0) var(--s-space-4); background: transparent; display: grid; gap: var(--s-space-2); }
+.user-note-title { font-size: var(--s-size-md); font-family: var(--s-font-sans); color: var(--s-text-tertiary); letter-spacing: var(--s-tracking-normal); margin-bottom: var(--s-space-0); line-height: var(--s-leading-none); }
+.user-note-text { font-size: var(--s-size-md); color: var(--s-text-secondary); line-height: var(--s-leading-body); }
+.user-note-actions { display: flex; align-items: center; }
+.rx-view-btn { height: var(--c-control-height-xs); padding: var(--s-space-0) var(--s-space-3); border: 1px solid var(--s-border-default); background: var(--s-surface); color: var(--s-text-primary); font-size: var(--s-size-md); font-weight: var(--s-weight-semibold); cursor: pointer; font-family: var(--s-font-sans); flex-shrink: 0; display: inline-flex; align-items: center; gap: var(--s-space-2); }
+.rx-view-btn:hover { background: var(--s-page); }
+.rx-icon { display: inline-flex; align-items: center; justify-content: center; }
+.rx-icon .ui-icon { width: var(--c-icon-sm); height: var(--c-icon-sm); }
+.items-section { border-bottom: 1px solid var(--s-border-subtle); }
+.item-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--s-space-3); padding: var(--s-space-4) var(--s-space-0); border-bottom: 1px solid var(--s-border-subtle); transition: none; }
+.item-row:last-child { border-bottom: none; }
+.item-row:hover { background: transparent; }
+.item-row.is-packed { color: var(--s-text-tertiary); }
+.item-row.is-packed .item-name, .item-row.is-packed .item-price { color: var(--s-text-tertiary); }
+.item-row.is-packed .item-qty { background: var(--s-success-pale-bg); color: var(--s-success-pale-text); }
+.item-row.is-pending-pack .item-name, .item-row.is-pending-pack .item-price { color: var(--s-text-primary); }
+.item-info { flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--s-space-2); }
+.item-name-exp { flex: 1; min-width: 0; display: flex; flex-direction: row; align-items: center; gap: var(--s-space-2); }
+.item-name-row { display: flex; align-items: center; gap: var(--s-space-1); min-width: 0; }
+.item-name { font-size: var(--s-size-xl); font-weight: var(--s-weight-strong); color: var(--s-text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: var(--s-tracking-normal); flex: 0 1 auto; min-width: 0; max-width: 100%; }
+.item-qty { display: inline-flex; align-items: center; height: var(--c-label-height); padding: var(--s-space-0) var(--c-badge-padding-x); background: var(--s-info-subtle); color: var(--s-action-primary); font-family: var(--s-font-sans); font-size: var(--s-size-md); font-weight: var(--s-weight-semibold); letter-spacing: var(--s-tracking-normal); line-height: var(--s-leading-none); white-space: nowrap; }
+.item-qty-number { display: inline-flex; align-items: center; justify-content: center; min-width: var(--c-label-inline-min-width); margin-left: var(--s-space-1); font-size: var(--s-size-md); font-weight: var(--s-weight-bold); line-height: var(--s-leading-none); letter-spacing: var(--s-tracking-normal); }
+.item-exp { font-family: var(--s-font-sans); font-size: var(--s-size-md); color: var(--s-text-muted); white-space: nowrap; min-width: var(--c-item-exp-min-width); }
+.item-pack-badge { display: inline-flex; align-items: center; height: var(--c-label-height); padding: var(--s-space-0) var(--c-badge-padding-x); font-family: var(--s-font-sans); font-size: var(--s-size-md); font-weight: var(--s-weight-semibold); line-height: var(--s-leading-none); text-transform: uppercase; letter-spacing: var(--s-tracking-normal); white-space: nowrap; flex-shrink: 0; }
+.item-pack-badge.is-packed { background: var(--s-success-pale-bg); color: var(--s-success-pale-text); }
+.item-pack-badge.is-pending-pack { background: var(--s-warning-pale-bg); color: var(--s-warning-pale-text); }
+.item-stock-badge { display: inline-flex; align-items: center; height: var(--c-label-height); padding: var(--s-space-0) var(--c-badge-padding-x); font-size: var(--s-size-md); font-family: var(--s-font-sans); font-weight: var(--s-weight-semibold); letter-spacing: var(--s-tracking-normal); border: none; text-transform: uppercase; flex: 0 0 auto; white-space: nowrap; }
+.item-stock-badge.in-stock { color: var(--s-success-pale-text); background: var(--s-success-pale-bg); }
+.item-stock-badge.out-of-stock { color: var(--s-error-text); background: var(--s-error-pale-bg); }
+.item-stock-badge.need-check { color: var(--s-warning-pale-text); background: var(--s-warning-pale-bg); }
+.item-price { font-family: var(--s-font-numeric); font-size: var(--s-size-xl); font-weight: var(--s-weight-medium); color: var(--s-text-secondary); flex-shrink: 0; min-width: var(--c-item-price-min-width); text-align: right; }
+.summary-section { padding: var(--s-space-3) var(--s-space-0); }
+.sum-row { display: flex; justify-content: space-between; padding: var(--s-space-1) var(--s-space-0); }
+.sum-label { font-family: var(--s-font-sans); font-size: var(--s-size-md); color: var(--s-text-tertiary); letter-spacing: var(--s-tracking-normal); }
+.sum-val { font-size: var(--s-size-xl); font-family: var(--s-font-numeric); color: var(--s-text-secondary); }
+.sum-divider { height: 1px; background: var(--s-border-subtle); margin: var(--s-space-2) var(--s-space-0); }
+.sum-total .sum-label { font-family: var(--s-font-sans); font-size: var(--s-size-md); color: var(--s-text-tertiary); letter-spacing: var(--s-tracking-normal); font-weight: var(--s-weight-regular); }
+.sum-total .sum-val { font-size: var(--s-size-2xl); font-weight: var(--s-weight-bold); color: var(--s-text-primary); font-family: var(--s-font-numeric); }
+.action-footer { padding: var(--s-space-2) var(--s-space-8) var(--s-space-8); background: var(--s-surface); flex-shrink: 0; position: relative; }
+.action-footer::before { content: ''; position: absolute; bottom: 100%; left: 0; right: 0; height: var(--c-scroll-shadow-height); background: radial-gradient(ellipse 60% 100% at 50% 100%, var(--s-scroll-shadow) 0%, transparent 100%); pointer-events: none; opacity: 0; transition: opacity var(--s-motion-subtle) var(--s-motion-ease-inout); }
+.action-footer.scroll-shadow::before { opacity: 1; }
+.main-action { width: 100%; height: var(--c-control-height); min-height: var(--c-control-height); background: var(--s-action-primary); color: var(--s-text-inverse); border: none; font-size: var(--s-size-md); font-weight: var(--s-weight-semibold); cursor: pointer; font-family: var(--s-font-sans); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--s-space-1); transition: all var(--s-motion-fast) var(--s-motion-ease-out); letter-spacing: var(--s-tracking-normal); padding: var(--s-space-2) var(--s-space-3); position: relative; overflow: hidden; }
+.main-action:hover:not(:disabled) { background: var(--s-action-hover); transform: translateY(-1px); box-shadow: var(--s-shadow-floating); }
+.main-action:active:not(:disabled) { transform: translateY(0); }
+.main-action.done { background: var(--s-surface); color: var(--s-text-primary); border: 1px solid var(--s-border-default); cursor: default; }
+.main-action.done:hover { transform: none; box-shadow: none; background: var(--s-surface); }
+.main-action.done .main-action-title { display: inline-flex; align-items: center; gap: var(--s-space-2); color: var(--s-text-primary); }
+.done-order-icon { width: 20px; height: var(--c-square-status-icon-size); width: var(--c-square-status-icon-size); border: 1px solid var(--s-border-default); color: var(--s-text-primary); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.done-order-icon .ui-icon { width: var(--c-icon-sm); height: var(--c-icon-sm); }
+.main-action.rejected { background: var(--s-surface-disabled); color: var(--s-text-muted); border: 1px solid var(--s-border-default); cursor: default; }
+.main-action.rejected:hover { transform: none; box-shadow: none; }
+.main-action.c-warning { background: var(--s-warning-action); color: var(--s-text-inverse); }
+.main-action.c-warning:hover:not(:disabled) { background: var(--s-warning-action-hover); }
+.main-action.is-passive { background: var(--s-surface); color: var(--s-text-primary); border: 1px solid var(--s-border-default); }
+.main-action.is-passive:hover { background: var(--s-info-subtle); transform: none; box-shadow: none; }
+.main-action.is-passive.has-progress::before { content: ''; position: absolute; inset: 0 auto 0 0; width: var(--progress-pct, 0%); background: var(--s-action-primary); transition: width var(--s-motion-progress) var(--s-motion-linear); z-index: 0; }
+.main-action-content { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--s-space-1); width: 100%; }
+.main-action-content-base { position: relative; z-index: 1; }
+.main-action.is-passive.has-progress .main-action-content-base { color: var(--s-text-primary); }
+.main-action-content-fill { display: none; }
+.main-action.is-passive.has-progress .main-action-content-fill { position: absolute; inset: 0; z-index: 2; display: flex; padding: var(--s-space-2) var(--s-space-3); color: var(--s-text-inverse); pointer-events: none; box-sizing: border-box; clip-path: inset(0 calc(100% - var(--progress-pct, 0%)) 0 0); transition: clip-path var(--s-motion-progress) var(--s-motion-linear); }
+.main-action-title { display: block; font-size: var(--s-size-md); font-weight: var(--s-weight-semibold); line-height: var(--s-leading-normal); white-space: nowrap; text-transform: uppercase; }
+.main-action-sub { display: block; font-size: var(--s-size-sm); font-weight: var(--s-weight-medium); line-height: var(--s-leading-normal); text-align: center; }
+.main-action:not(.has-sub) .main-action-sub { display: none; }
+.main-action:disabled { opacity: 1; cursor: not-allowed; }
+.main-action:disabled:hover { transform: none; box-shadow: none; }
+.sub-actions { display: flex; gap: var(--s-space-2); margin-top: var(--s-space-2); }
+.sub-btn { flex: 1; height: var(--c-control-height-compact); min-height: var(--c-control-height-compact); background: var(--s-surface); color: var(--s-text-primary); border: 1px solid var(--s-border-default); font-size: var(--s-size-md); font-weight: var(--s-weight-medium); cursor: pointer; font-family: var(--s-font-sans); transition: all var(--s-motion-fast); display: inline-flex; align-items: center; justify-content: center; gap: var(--s-space-2); }
+.sub-btn:hover { background: var(--s-surface-disabled); }
+.sub-btn .ui-icon { width: var(--c-icon-sm); height: var(--c-icon-sm); }
+.sub-btn-info { cursor: default; color: var(--s-text-tertiary); background: var(--s-surface-disabled); border-color: var(--s-border-default); }
+.sub-btn-info:hover { background: var(--s-surface-disabled); }
+.completed-by-badge { display: flex; width: fit-content; align-items: center; justify-content: center; gap: var(--s-space-2); height: var(--c-label-height); padding: var(--s-space-0) var(--s-space-3); margin: var(--s-space-2) var(--s-space-0) var(--s-space-0); border: 1px solid var(--s-success-pale-bg); background: var(--s-success-pale-bg); color: var(--s-success-pale-text); font-family: var(--s-font-sans); font-size: var(--s-size-md); font-weight: var(--s-weight-semibold); letter-spacing: var(--s-tracking-normal); text-transform: uppercase; }
+.completed-by-badge .ui-icon { width: var(--c-icon-xs); height: var(--c-icon-xs); }
+.view-order-btn { height: var(--c-control-height-sm); padding: var(--s-space-0) var(--s-space-4); border: 1px solid var(--s-action-primary); background: var(--s-action-primary); color: var(--s-text-inverse); font-size: var(--s-size-md); font-weight: var(--s-weight-semibold); text-transform: uppercase; font-family: var(--s-font-sans); cursor: pointer; margin-top: auto; }
+.view-order-btn:hover { background: var(--s-action-hover); border-color: var(--s-action-hover); }
+.toast { position: fixed; bottom: calc(var(--s-space-8) * 2); left: 50%; transform: translateX(-50%) translateY(calc(var(--s-space-8) * 2)); opacity: 0; background: var(--s-surface); color: var(--s-text-primary); height: var(--c-control-height-compact); padding: var(--s-space-0) var(--s-space-4) var(--s-space-0) var(--s-space-0); font-size: var(--s-size-md); font-weight: var(--s-weight-medium); display: flex; align-items: center; gap: var(--s-space-0); z-index: var(--c-z-toast); pointer-events: none; transition: transform var(--s-motion-reveal) var(--s-motion-ease-inout), opacity var(--s-motion-reveal) var(--s-motion-ease-inout); font-family: var(--s-font-sans); white-space: nowrap; box-shadow: var(--s-shadow-layer); }
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+.toast.is-leaving { transform: translateX(-50%) translateY(20px); opacity: 0; transition-duration: var(--s-motion-leave); }
+.toast-icon { display: inline-flex; align-items: center; justify-content: center; width: var(--c-square-control-size); height: var(--c-square-control-size); background: var(--s-brand-icon-bg); color: var(--s-text-inverse); flex-shrink: 0; }
+.toast-icon .ui-icon { width: var(--c-icon-md); height: var(--c-icon-md); }
+.toast-msg { padding: var(--s-space-0) var(--s-space-0) var(--s-space-0) var(--s-space-3); }
+.incoming-popup { position: fixed; left: 0; bottom: 0; z-index: var(--c-z-incoming-popup); width: min(var(--c-drawer-incoming-width), 100vw); }
+.incoming-popup[hidden] { display: none; }
+.incoming-popup-card { width: 100%; background: var(--s-surface); box-shadow: var(--s-shadow-layer); padding: var(--s-space-8); display: grid; gap: var(--s-space-0); overflow: hidden; transform: translateY(calc(var(--s-space-8) * 2)); opacity: 0; transition: transform var(--s-motion-reveal) var(--s-motion-ease-inout), opacity var(--s-motion-reveal) var(--s-motion-ease-inout); will-change: transform, opacity; }
+.incoming-popup.is-visible .incoming-popup-card { transform: translateY(0); opacity: 1; }
+.incoming-popup.is-leaving .incoming-popup-card { transform: translateY(20px); opacity: 0; transition-duration: var(--s-motion-leave); }
+.incoming-popup-title { font-family: var(--s-font-sans); font-size: var(--s-size-3xl); font-weight: var(--s-weight-extrabold); line-height: var(--s-leading-none); letter-spacing: var(--s-tracking-normal); color: var(--s-text-primary); display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-space-2); margin: var(--s-space-0); padding: var(--s-space-2) var(--s-space-0); background: var(--s-surface); border-bottom: 1px solid var(--s-border-subtle); }
+.incoming-popup-title-meta { margin-left: auto; font-family: var(--s-font-numeric); }
+.incoming-popup-summary { position: relative; padding: var(--s-space-0) var(--s-space-0) var(--s-space-8); min-height: var(--c-drawer-incoming-summary-min-height); display: flex; flex-direction: column; justify-content: space-between; margin: var(--s-space-0); }
+.incoming-popup-summary::before { content: ""; position: absolute; top: calc(0px - var(--s-space-8)); left: calc(0px - var(--s-space-8)); right: calc(0px - var(--s-space-8)); bottom: 0; background: var(--s-action-primary); z-index: 0; }
+.incoming-popup-summary > * { position: relative; z-index: 1; }
+.incoming-popup-summary .incoming-popup-order-meta, .incoming-popup-summary .incoming-popup-total-label { color: var(--s-alpha-white-78); }
+.incoming-popup-summary .incoming-popup-order-name, .incoming-popup-summary .incoming-popup-order-phone, .incoming-popup-summary .incoming-popup-order-total { color: var(--s-text-inverse); }
+.incoming-popup-order-top { display: grid; gap: var(--s-space-2); margin-top: var(--s-space-0); margin-bottom: var(--s-space-0); line-height: var(--s-leading-none); }
+.incoming-popup-order-name { font-family: var(--s-font-sans); font-size: var(--s-size-3xl); font-weight: var(--s-weight-semibold); letter-spacing: var(--s-tracking-normal); line-height: var(--s-leading-none); color: var(--s-text-inverse); }
+.incoming-popup-order-meta { font-family: var(--s-font-sans); font-size: var(--s-size-md); color: var(--s-alpha-white-78); letter-spacing: var(--s-tracking-normal); text-transform: uppercase; margin-bottom: var(--s-space-3); }
+.incoming-popup-order-phone { font-family: var(--s-font-sans); font-size: var(--s-size-3xl); font-weight: var(--s-weight-thin); letter-spacing: var(--s-tracking-normal); line-height: var(--s-leading-normal); opacity: var(--s-opacity-70); color: var(--s-text-inverse); }
+.incoming-popup-order-total { font-family: var(--s-font-numeric); font-size: var(--s-size-2xl); font-weight: var(--s-weight-bold); letter-spacing: var(--s-tracking-normal); color: var(--s-text-primary); }
+.incoming-popup-section { background: var(--s-surface); padding: var(--s-space-8) var(--s-space-0) var(--s-space-0); margin: var(--s-space-0); }
+.incoming-popup-section-title { font-family: var(--s-font-sans); font-size: var(--s-size-md); color: var(--s-text-tertiary); letter-spacing: var(--s-tracking-normal); margin-bottom: var(--s-space-2); }
+.incoming-popup-items-title { display: inline-flex; align-items: center; gap: var(--s-space-2); }
+.incoming-popup-note { font-size: var(--s-size-md); line-height: var(--s-leading-body); color: var(--s-text-secondary); }
+.incoming-popup-rx-row { margin-bottom: var(--s-space-2); }
+.incoming-popup-rx-row[hidden] { display: none; }
+.incoming-popup-order-items { display: block; }
+.incoming-popup-order-items .row-item-summary { display: flex; width: 100%; max-width: 100%; padding-top: var(--s-space-0); border-bottom: 1px solid var(--s-border-subtle); padding: var(--s-space-2) var(--s-space-0); }
+.incoming-popup-order-items .row-item-summary:last-of-type { border-bottom: none; }
+.incoming-popup-order-items .row-item-summary-text { white-space: normal; -webkit-line-clamp: unset; overflow: visible; }
+.incoming-popup-order-items .incoming-popup-more-row { border-bottom: none; padding: var(--s-space-2) var(--s-space-0); }
+.incoming-popup-items-total { margin-top: var(--s-space-3); padding-top: var(--s-space-2); border-top: none; display: inline-flex; align-items: center; gap: var(--s-space-2); }
+.incoming-popup-actions { display: grid; grid-template-columns: 1fr 1.4fr; gap: var(--s-space-2); width: 100%; margin: var(--s-space-0); padding-top: var(--s-space-8); }
+.incoming-btn { height: var(--c-control-height); padding: var(--s-space-0) var(--s-space-4); border: 1px solid var(--s-border-default); background: var(--s-surface); color: var(--s-text-secondary); font-size: var(--s-size-md); font-weight: var(--s-weight-semibold); font-family: var(--s-font-sans); cursor: pointer; width: 100%; }
+.incoming-btn.primary { background: var(--s-action-primary); border-color: var(--s-action-primary); color: var(--s-text-inverse); font-size: var(--s-size-md); text-transform: uppercase; }
+.incoming-btn.primary:hover { background: var(--s-action-hover); border-color: var(--s-action-hover); }
+.incoming-btn.ghost:hover { background: var(--s-surface-disabled); }
+.reject-popup { position: fixed; inset: 0; z-index: var(--c-z-reject-popup); display: flex; align-items: center; justify-content: center; padding: var(--s-space-5); background: var(--s-overlay); }
+.reject-popup[hidden] { display: none; }
+.reject-popup-card { width: min(var(--c-modal-reject-width), 100%); border: 1px solid var(--s-border-default); background: var(--s-surface); box-shadow: var(--s-shadow-layer); padding: var(--s-space-5); }
+.reject-popup-title { font-size: var(--s-size-3xl); font-weight: var(--s-weight-extrabold); line-height: var(--s-leading-none); letter-spacing: var(--s-tracking-normal); color: var(--s-text-primary); margin-bottom: var(--s-space-2); }
+.reject-popup-sub { font-size: var(--s-size-md); color: var(--s-text-secondary); margin-bottom: var(--s-space-3); line-height: var(--s-leading-body); }
+.reject-reason-list { display: grid; gap: var(--s-space-2); margin-bottom: var(--s-space-3); }
+.reject-reason-btn { width: 100%; border: 1px solid var(--s-border-default); background: var(--s-surface); color: var(--s-text-primary); font-size: var(--s-size-md); text-align: left; padding: var(--s-space-2) var(--s-space-3); font-family: var(--s-font-sans); cursor: pointer; }
+.reject-reason-btn:hover { background: var(--s-surface-disabled); }
+.reject-reason-btn.active { border-color: var(--s-error); background: var(--s-error); color: var(--s-text-inverse); }
+.reject-reason-btn.active:hover { background: var(--s-error-pressed); border-color: var(--s-error-pressed); }
+.reject-popup-actions { display: flex; justify-content: flex-end; gap: var(--s-space-2); }
+.reject-confirm-btn.incoming-btn.primary { background: var(--s-error); border-color: var(--s-error); color: var(--s-text-inverse); }
+.reject-confirm-btn.incoming-btn.primary:enabled:hover { background: var(--s-error-text); border-color: var(--s-error-text); }
+.reject-confirm-btn.incoming-btn.primary:disabled { background: var(--s-error-disabled); border-color: var(--s-error-disabled); color: var(--s-text-inverse); cursor: not-allowed; }
+.reject-popup-actions .incoming-btn { height: var(--c-control-height-compact); }
+.prescription-popup { position: fixed; inset: 0; z-index: var(--c-z-prescription-popup); display: flex; align-items: center; justify-content: center; padding: var(--s-space-4); background: var(--s-overlay); }
+.prescription-popup[hidden] { display: none; }
+.prescription-popup-card { width: min(var(--c-modal-prescription-width), 100%); border: 1px solid var(--s-border-default); background: var(--s-surface); box-shadow: var(--s-shadow-layer); padding: var(--s-space-8); }
+.prescription-popup-title { font-size: var(--s-size-3xl); font-weight: var(--s-weight-extrabold); line-height: var(--s-leading-none); letter-spacing: var(--s-tracking-normal); color: var(--s-text-primary); margin-bottom: var(--s-space-4); }
+.prescription-image { min-height: var(--c-preview-prescription-min-height); border: 1px solid var(--s-border-subtle); background: linear-gradient(90deg, var(--s-prescription-grid) 0 1px, transparent 1px 100%), linear-gradient(0deg, var(--s-prescription-grid) 0 1px, transparent 1px 100%), var(--s-prescription-bg); background-size: var(--s-space-6) var(--s-space-6); display: grid; align-content: start; gap: var(--s-space-4); padding: var(--s-space-6); margin-bottom: var(--s-space-5); }
+.prescription-image-header { display: flex; justify-content: space-between; gap: var(--s-space-4); font-family: var(--s-font-sans); font-size: var(--s-size-md); color: var(--s-text-tertiary); letter-spacing: var(--s-tracking-normal); text-transform: uppercase; }
+.prescription-image-line { height: var(--c-preview-prescription-line-height); background: var(--s-prescription-line); }
+.prescription-image-line.short { width: 48%; }
+.prescription-image-line.medium { width: 72%; }
+.prescription-note-card { padding: var(--s-space-0); margin-bottom: var(--s-space-5); }
+.prescription-note-label { display: block; margin-bottom: var(--s-space-2); font-family: var(--s-font-sans); font-size: var(--s-size-md); color: var(--s-text-tertiary); letter-spacing: var(--s-tracking-normal); }
+.prescription-note-text { font-size: var(--s-size-md); line-height: var(--s-leading-body); color: var(--s-text-secondary); }
+.prescription-popup-actions { display: flex; gap: var(--s-space-2); }
+.prescription-popup-actions .incoming-btn { width: 100%; height: var(--c-control-height-compact); }
+.barcode-popup { position: fixed; inset: 0; z-index: var(--c-z-barcode-popup); display: flex; align-items: center; justify-content: center; padding: var(--s-space-5); background: var(--s-overlay); }
+.barcode-popup[hidden] { display: none; }
+.barcode-popup-card { width: min(var(--c-modal-barcode-width), var(--c-modal-barcode-max-width-vw)); max-height: min(var(--c-modal-barcode-max-height-vh), var(--c-modal-barcode-max-height)); border: 1px solid var(--s-border-default); background: var(--s-surface); box-shadow: var(--s-shadow-layer); padding: var(--s-space-8); display: flex; flex-direction: column; overflow: hidden; transition: max-height var(--s-motion-collapse) var(--s-motion-ease-in); }
+.barcode-popup-card.is-complete { max-height: min(var(--c-modal-barcode-max-height-vh), var(--c-modal-barcode-max-height)); }
+.barcode-popup-header { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-space-4); margin-bottom: var(--s-space-2); }
+.barcode-popup-title { font-size: var(--s-size-3xl); font-weight: var(--s-weight-extrabold); line-height: var(--s-leading-none); letter-spacing: var(--s-tracking-normal); color: var(--s-text-primary); }
+.barcode-cancel-btn { height: var(--c-control-height-xs); padding: var(--s-space-0) var(--s-space-3); border: 1px solid var(--s-border-default); background: var(--s-surface); color: var(--s-text-secondary); font-family: var(--s-font-sans); font-size: var(--s-size-md); font-weight: var(--s-weight-semibold); line-height: var(--s-leading-none); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+.barcode-cancel-btn:hover { background: var(--s-surface-disabled); color: var(--s-text-primary); }
+.barcode-cancel-btn:active { border-color: var(--s-border-strong); }
+.barcode-cancel-btn:focus-visible { outline: var(--c-focus-size) solid var(--s-focus-ring); outline-offset: var(--c-focus-gap); }
+.barcode-popup-sub { font-size: var(--s-size-md); color: var(--s-text-secondary); margin-bottom: var(--s-space-3); }
+.barcode-progress-track { width: 100%; height: var(--s-space-3); min-height: var(--s-space-3); flex: 0 0 var(--s-space-3); border-radius: var(--s-radius-none); background: var(--s-border-default); overflow: hidden; margin-bottom: var(--s-space-2); }
+.barcode-progress-fill { width: 0%; height: 100%; border-radius: var(--s-radius-none); background: var(--s-action-primary); transition: width var(--s-motion-fast) var(--s-motion-ease-out); }
+.barcode-progress-footer { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-space-3); margin-bottom: var(--s-space-3); flex: 0 0 auto; }
+.barcode-progress-meta { display: grid; justify-items: start; align-content: start; gap: var(--s-space-1); font-family: var(--s-font-sans); font-size: var(--s-size-md); color: var(--s-text-muted); text-align: left; }
+.barcode-progress-meta span:first-child { font-size: var(--s-size-2xl); font-weight: var(--s-weight-bold); line-height: var(--s-leading-none); color: var(--s-text-primary); letter-spacing: var(--s-tracking-normal); }
+.barcode-scan-list { flex: 1 1 auto; min-height: 0; overflow: auto; scroll-padding: calc(var(--s-space-8) * 3) var(--s-space-0); scrollbar-width: thin; scrollbar-color: var(--s-scrollbar-thumb) transparent; }
+.barcode-popup-card > .barcode-progress-track { order: 1; }
+.barcode-popup-card > .barcode-scan-list { order: 2; }
+.barcode-scan-list.has-scrollbar .barcode-scan-row { padding-right: var(--s-space-4); }
+.barcode-popup-card > .barcode-progress-footer { order: 3; }
+.barcode-popup-card > .barcode-popup-actions-bottom { order: 4; }
+.barcode-scan-row { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--s-space-2); padding: var(--s-space-4) var(--s-space-0); border-bottom: 1px solid var(--s-border-subtle); font-size: var(--s-size-md); align-items: center; overflow: hidden; background: var(--s-surface); transition: color var(--s-motion-scan) var(--s-motion-ease-inout); }
+.barcode-scan-row:last-child { border-bottom: none; }
+.barcode-scan-row::before { content: none; }
+.barcode-scan-row > * { position: relative; z-index: 1; }
+.barcode-scan-row.scanning::before { clip-path: inset(0 0 0 0); }
+.barcode-item-main { display: flex; align-items: center; gap: var(--s-space-3); min-width: 0; }
+.barcode-item-copy { min-width: 0; }
+.barcode-item-name-row { display: flex; align-items: baseline; gap: var(--s-space-2); min-width: 0; }
+.barcode-item-name { font-size: var(--s-size-2xl); font-weight: var(--s-weight-strong); color: var(--s-text-primary); line-height: var(--s-leading-normal); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: var(--s-tracking-normal); transition: color var(--s-motion-scan) var(--s-motion-ease-inout); flex: 0 1 auto; min-width: 0; }
+.barcode-qty-badge { display: inline-flex; align-items: center; height: var(--c-label-height); padding: var(--s-space-0) var(--c-badge-padding-x); background: var(--s-info-subtle); color: var(--s-action-primary); font-family: var(--s-font-sans); font-size: var(--s-size-md); font-weight: var(--s-weight-semibold); letter-spacing: var(--s-tracking-normal); line-height: var(--s-leading-none); white-space: nowrap; transition: color var(--s-motion-scan) var(--s-motion-ease-inout), background var(--s-motion-scan) var(--s-motion-ease-inout); }
+.barcode-item-exp { font-size: var(--s-size-md); color: var(--s-text-tertiary); font-family: var(--s-font-sans); opacity: 0; max-width: 0; overflow: hidden; white-space: nowrap; transition: opacity var(--s-motion-scan) var(--s-motion-ease-inout), max-width var(--s-motion-scan) var(--s-motion-ease-inout), color var(--s-motion-scan) var(--s-motion-ease-inout); }
+.barcode-item-exp.is-visible { opacity: 1; max-width: var(--c-barcode-exp-max-width); }
+.barcode-status-badge { display: inline-flex; align-items: center; justify-content: center; gap: var(--c-badge-gap); height: var(--c-label-height); padding: var(--s-space-0) var(--c-badge-padding-x); font-family: var(--s-font-sans); font-size: var(--s-size-md); line-height: var(--s-leading-none); transition: color var(--s-motion-scan) var(--s-motion-ease-inout), background var(--s-motion-scan) var(--s-motion-ease-inout); }
+.barcode-status-badge.waiting { color: var(--s-text-tertiary); }
+.barcode-status-badge.scanning,
+.barcode-scan-row.scanning .barcode-status-badge { background: var(--s-action-primary); color: var(--s-text-inverse); font-weight: var(--s-weight-semibold); }
+.barcode-status-badge.scanned { background: var(--s-success); color: var(--s-text-inverse); font-weight: var(--s-weight-semibold); }
+.barcode-status-badge.scanned::before { content: '✓'; display: inline-block; font-size: var(--s-size-sm); font-weight: var(--s-weight-bold); line-height: var(--s-leading-none); }
+.barcode-popup-actions { display: flex; justify-content: flex-end; align-items: center; margin-top: var(--s-space-0); margin-left: auto; }
+.barcode-popup-actions-bottom { width: 100%; max-height: var(--c-control-height); flex: 0 0 var(--c-control-height); margin-top: var(--s-space-2); margin-left: var(--s-space-0); overflow: hidden; opacity: 1; transition: max-height var(--s-motion-collapse) var(--s-motion-ease-in), flex-basis var(--s-motion-collapse) var(--s-motion-ease-in), margin-top var(--s-motion-collapse) var(--s-motion-ease-in), opacity var(--s-motion-alpha) var(--s-motion-ease-in); }
+.barcode-cancel-btn-bottom { margin-right: auto; height: 54px; min-height: 54px; }
+.barcode-action-btn { transition: opacity var(--s-motion-alpha) var(--s-motion-ease-inout), transform var(--s-motion-collapse) var(--s-motion-ease-inout); }
+.barcode-action-btn.is-visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.barcode-action-btn.is-hidden { opacity: 0; transform: translateY(6px); pointer-events: none; width: 0; min-width: 0; padding-left: 0; padding-right: 0; border-width: 0; margin: 0; overflow: hidden; }
+.barcode-cancel-btn-bottom.is-visible { min-width: 148px; }
+.barcode-close-btn.is-scanning { width: auto; border: none; background: transparent; color: var(--s-text-muted); display: inline-flex; align-items: center; justify-content: flex-end; font-family: var(--s-font-sans); font-size: var(--s-size-md); font-weight: var(--s-weight-semibold); text-transform: uppercase; letter-spacing: var(--s-tracking-normal); height: auto; padding: var(--s-space-1) var(--s-space-2); cursor: default; pointer-events: none; }
+.barcode-close-btn.is-scanning::after { content: "..."; display: inline-block; margin-left: var(--s-space-1); width: 3ch; overflow: hidden; letter-spacing: var(--s-tracking-normal); animation: packing-dots 1s steps(4, end) infinite; }
+.barcode-close-btn.is-ready { background: var(--s-action-primary); border-color: var(--s-action-primary); color: var(--s-text-inverse); height: var(--c-control-height); min-height: var(--c-control-height); }
+.barcode-close-btn.is-ready.is-visible { width: 100%; }
+.barcode-close-btn.is-ready:hover { background: var(--s-action-hover); border-color: var(--s-action-hover); }
+
+/* ── Catalog popup gallery ────────────────────────────────────────────────── */
+.icon-grid { display: grid; grid-template-columns: repeat(10, minmax(64px, 1fr)); gap: var(--s-space-2); }
+.icon-tile { min-height: 70px; border: 1px solid var(--s-border-subtle); background: var(--s-surface); display: grid; place-items: center; gap: var(--s-space-1); padding: var(--s-space-2); color: var(--s-text-muted); }
+.icon-tile .ui-icon { width: var(--c-icon-md); height: var(--c-icon-md); }
+.icon-tile span { font-size: var(--s-size-sm); color: var(--s-text-tertiary); text-align: center; }
+.popup-gallery {
+  position: relative;
+  min-height: 720px;
+  background: linear-gradient(90deg, var(--s-hatch-stripe) 0 1px, transparent 1px 100%), var(--s-page);
+  background-size: var(--s-space-6) var(--s-space-6);
+  border: 1px solid var(--s-border-default);
+  padding: var(--s-space-6);
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(360px, 440px) minmax(0, 1fr);
+  gap: var(--s-space-6);
+  align-items: start;
+}
+.popup-gallery .incoming-popup-card,
+.popup-gallery .reject-popup-card,
+.popup-gallery .prescription-popup-card,
+.popup-gallery .barcode-popup-card { box-shadow: none; }
+.popup-gallery .modal-pair { margin-top: 0; }
+.popup-gallery .barcode-popup-card { grid-column: 1 / -1; width: min(var(--c-modal-barcode-width), 100%); }
+.popup-gallery .incoming-popup-card { width: min(var(--c-drawer-incoming-width), 100%); transform: none; opacity: 1; transition: none; }
+.modal-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-space-4); margin-top: var(--s-space-4); }
+
+/* Animations */
+@keyframes packing-dots {
+  0%  { clip-path: inset(0 100% 0 0); }
+  25% { clip-path: inset(0 66.66% 0 0); }
+  50% { clip-path: inset(0 33.33% 0 0); }
+  75% { clip-path: inset(0 0 0 0); }
+}
+@keyframes order-row-enter {
+  from { transform: translateY(-36px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@keyframes barcode-scan-fill-out {
+  from { clip-path: inset(0 0 0 0); }
+  to { clip-path: inset(100% 0 0 0); }
+}
+
+/* Responsive */
+@media (max-width: 1180px) {
+  .order-row { height: auto; min-height: var(--c-row-min-height); }
+  .row-body { grid-template-columns: 1fr; gap: var(--s-space-3); }
+  .row-right { text-align: left; align-items: flex-start; }
+  .row-stage-meta { margin-top: var(--s-space-3); align-items: flex-start; }
+  .view-order-btn { margin-top: var(--s-space-3); }
+}
+@media (max-width: 1060px) {
+  .system-shell { grid-template-columns: 1fr; }
+  .system-nav { position: static; height: auto; }
+  .system-nav nav { display: flex; flex-wrap: wrap; gap: var(--s-space-3) var(--s-space-5); }
+  .catalog-header { grid-template-columns: 1fr; }
+  .catalog-meta { text-align: left; }
+  .grid.cols-2, .grid.cols-3, .grid.cols-4, .mini-workspace, .module-workspace, .modal-pair, .popup-gallery { grid-template-columns: 1fr; }
+  .module-workspace { grid-template-rows: none; }
+  .module-workspace .module-block:nth-child(3) { min-width: 0; }
+  .module-block + .module-block { border-right: none; }
+  .icon-grid { grid-template-columns: repeat(4, minmax(64px, 1fr)); }
+  .topbar { align-items: flex-start; gap: var(--s-space-4); flex-wrap: wrap; }
+  .topbar-right { margin-left: 0; flex-wrap: wrap; }
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-search" viewBox="0 0 32 32"><path d="m29 27.586-7.552-7.552a11.018 11.018 0 1 0-1.414 1.414L27.586 29ZM4 13a9 9 0 1 1 9 9 9.01 9.01 0 0 1-9-9"/></symbol>
+  <symbol id="i-check" viewBox="0 0 32 32"><path d="m13 24-9-9 1.414-1.414L13 21.171 26.586 7.586 28 9z"/></symbol>
+  <symbol id="i-close" viewBox="0 0 32 32"><path d="M17.414 16 24 9.414 22.586 8 16 14.586 9.414 8 8 9.414 14.586 16 8 22.586 9.414 24 16 17.414 22.586 24 24 22.586z"/></symbol>
+  <symbol id="i-time" viewBox="0 0 32 32"><path d="M16 30a14 14 0 1 1 14-14 14 14 0 0 1-14 14m0-26a12 12 0 1 0 12 12A12 12 0 0 0 16 4"/><path d="M20.59 22 15 16.41V7h2v8.58l5 5.01z"/></symbol>
+  <symbol id="i-document" viewBox="0 0 32 32"><path d="m25.7 9.3-7-7c-.2-.2-.4-.3-.7-.3H8c-1.1 0-2 .9-2 2v24c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V10c0-.3-.1-.5-.3-.7M18 4.4l5.6 5.6H18zM24 28H8V4h8v6c0 1.1.9 2 2 2h6z"/><path d="M10 22h12v2H10zm0-6h12v2H10z"/></symbol>
+  <symbol id="i-medication" viewBox="0 0 32 32"><path d="M24 2H8a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2v18a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2M10 14h3v10h-3Zm12 14H10v-2h5V12h-5v-2h12ZM8 8V4h16v4Z"/></symbol>
+  <symbol id="i-pills" viewBox="0 0 32 32"><path d="M22 14a7.94 7.94 0 0 0-4 1.083V9A7 7 0 0 0 4 9v14a6.999 6.999 0 0 0 12.286 4.588A7.997 7.997 0 1 0 22 14m0 2a6.005 6.005 0 0 1 5.91 5H16.09A6.005 6.005 0 0 1 22 16M6 9a5 5 0 0 1 10 0v6H6Zm5 19a5.006 5.006 0 0 1-5-5v-6h9.765a7.96 7.96 0 0 0-.724 8.932A4.99 4.99 0 0 1 11 28m11 0a6.005 6.005 0 0 1-5.91-5h11.82A6.005 6.005 0 0 1 22 28"/></symbol>
+  <symbol id="i-box" viewBox="0 0 32 32"><path d="M20 21h-8a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2m-8-4v2h8v-2Z"/><path d="M28 4H4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2v16a2 2 0 0 0 2 2h20a2 2 0 0 0 2-2V12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2m-2 24H6V12h20Zm2-18H4V6h24z"/></symbol>
+  <symbol id="i-send" viewBox="0 0 32 32"><path d="m27.45 15.11-22-11a1 1 0 0 0-1.08.12 1 1 0 0 0-.33 1L7 16 4 26.74A1 1 0 0 0 5 28a1 1 0 0 0 .45-.11l22-11a1 1 0 0 0 0-1.78m-20.9 10L8.76 17H18v-2H8.76L6.55 6.89 24.76 16Z"/></symbol>
+  <symbol id="i-image" viewBox="0 0 32 32"><path d="M19 14a3 3 0 1 0-3-3 3 3 0 0 0 3 3m0-4a1 1 0 1 1-1 1 1 1 0 0 1 1-1"/><path d="M26 4H6a2 2 0 0 0-2 2v20a2 2 0 0 0 2 2h20a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2m0 22H6v-6l5-5 5.59 5.59a2 2 0 0 0 2.82 0L21 19l5 5Zm0-4.83-3.59-3.59a2 2 0 0 0-2.82 0L18 19.17l-5.59-5.59a2 2 0 0 0-2.82 0L6 17.17V6h20Z"/></symbol>
+  <symbol id="i-user" viewBox="0 0 32 32"><path d="M16 8a5 5 0 1 0 5 5 5 5 0 0 0-5-5m0 8a3 3 0 1 1 3-3 3.003 3.003 0 0 1-3 3"/><path d="M16 2a14 14 0 1 0 14 14A14.016 14.016 0 0 0 16 2m-6 24.377V25a3.003 3.003 0 0 1 3-3h6a3.003 3.003 0 0 1 3 3v1.377a11.9 11.9 0 0 1-12 0m13.993-1.451A5 5 0 0 0 19 20h-6a5 5 0 0 0-4.992 4.926 12 12 0 1 1 15.985 0"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 32 32"><path d="M17.74 30 16 29l4-7h6a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h9v2H6a4 4 0 0 1-4-4V8a4 4 0 0 1 4-4h20a4 4 0 0 1 4 4v12a4 4 0 0 1-4 4h-4.84Z"/><path d="M8 10h16v2H8zm0 6h10v2H8z"/></symbol>
+  <symbol id="i-notification" viewBox="0 0 32 32"><path d="M28.707 19.293 26 16.586V13a10.014 10.014 0 0 0-9-9.95V1h-2v2.05A10.014 10.014 0 0 0 6 13v3.586l-2.707 2.707A1 1 0 0 0 3 20v3a1 1 0 0 0 1 1h7v.777a5.15 5.15 0 0 0 4.5 5.199A5.006 5.006 0 0 0 21 25v-1h7a1 1 0 0 0 1-1v-3a1 1 0 0 0-.293-.707M19 25a3 3 0 0 1-6 0v-1h6Zm8-3H5v-1.586l2.707-2.707A1 1 0 0 0 8 17v-4a8 8 0 0 1 16 0v4a1 1 0 0 0 .293.707L27 20.414Z"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 32 32"><path d="M27 22.42v4.16a1.42 1.42 0 0 1-1.55 1.41 22.93 22.93 0 0 1-9.99-3.55 22.58 22.58 0 0 1-6.95-6.95A22.93 22.93 0 0 1 4.96 7.5 1.42 1.42 0 0 1 6.36 6h4.18A1.42 1.42 0 0 1 12 7.2c.12 1.15.36 2.27.72 3.35a1.42 1.42 0 0 1-.32 1.46l-1.77 1.77a18.9 18.9 0 0 0 7.59 7.59l1.77-1.77a1.42 1.42 0 0 1 1.46-.32c1.08.36 2.2.6 3.35.72A1.42 1.42 0 0 1 27 22.42"/></symbol>
+  <symbol id="i-hourglass" viewBox="0 0 32 32"><path d="M15 19h2v2h-2zm0 4h2v2h-2z"/><path d="M23 11.67V4h3V2H6v2h3v7.67a2 2 0 0 0 .4 1.2L11.75 16 9.4 19.13a2 2 0 0 0-.4 1.2V28H6v2h20v-2h-3v-7.67a2 2 0 0 0-.4-1.2L20.25 16l2.35-3.13a2 2 0 0 0 .4-1.2M21 4v7H11V4Zm0 16.33V28H11v-7.67L14.25 16 12 13h8l-2.25 3Z"/></symbol>
+  <symbol id="i-error" viewBox="0 0 32 32"><path d="M2 16A14 14 0 1 0 16 2 14 14 0 0 0 2 16m23.15 7.75L8.25 6.85a12 12 0 0 1 16.9 16.9M8.24 25.16a12 12 0 0 1-1.4-16.89l16.89 16.89a12 12 0 0 1-15.49 0"/></symbol>
+  <symbol id="i-printer" viewBox="0 0 32 32"><path d="M28 9h-3V3H7v6H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h3v6h18v-6h3a2 2 0 0 0 2-2V11a2 2 0 0 0-2-2M9 5h14v4H9Zm14 22H9V17h14Zm5-6h-3v-6H7v6H4V11h24Z"/></symbol>
+  <symbol id="i-bottleA" viewBox="0 0 32 32"><path d="M26 9.37V3a1 1 0 0 0-1-1h-3v2h2v6.72s3 .507 3 4.28v13h-3v2h4a1 1 0 0 0 1-1V15c0-3.452-1.933-5.024-3-5.63m-7 0V3a1 1 0 0 0-1-1h-3v2h2v6.72s3 .507 3 4.28v13h-3v2h4a1 1 0 0 0 1-1V15c0-3.452-1.933-5.024-3-5.63m-7 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1v6.37c-1.067.606-3 2.178-3 5.63v14a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V15c0-3.452-1.933-5.024-3-5.63M13 28H5V15c0-3.772 3-4.28 3-4.28V4h2v6.72s3 .508 3 4.28z"/></symbol>
+  <symbol id="i-bottleB" viewBox="0 0 32 32"><path d="M24 9.051V6a1 1 0 0 0-1-1h-3v2h2v3.02s2 1.124 2 3.48V25h-4v2h5a1 1 0 0 0 1-1V13.5a5.93 5.93 0 0 0-2-4.449m-8 0V6a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3.051A5.93 5.93 0 0 0 6 13.5V26a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V13.5a5.93 5.93 0 0 0-2-4.449M16 25H8V13.5c0-2.356 2-3.48 2-3.48V7h4v3.02s2 1.124 2 3.48z"/></symbol>
+  <symbol id="i-lifebuoy" viewBox="0 0 32 32"><path d="M16 2a14 14 0 1 0 14 14A14.016 14.016 0 0 0 16 2m9.93 13h-3.05a7 7 0 0 0-2.63-4.55l2.16-2.16A11.93 11.93 0 0 1 25.93 15m-9.93 9a9 9 0 0 1-1-.06V20.9a5 5 0 0 0 2 0v3.04a9 9 0 0 1-1 .06m-1-5.18a3 3 0 1 1 2 0a3 3 0 0 1-2 0m2-10.76V5.06a11.93 11.93 0 0 1 5.41 2.23l-2.16 2.16A7 7 0 0 0 17 8.06m-2 0a7 7 0 0 0-3.25 1.39L9.59 7.29A11.93 11.93 0 0 1 15 5.06Zm-4.63 2.39A7 7 0 0 0 7.12 15H4.07a11.93 11.93 0 0 1 3.52-6.71Zm-3.25 6.55a7 7 0 0 0 2.63 4.55l-2.16 2.16A11.93 11.93 0 0 1 4.07 17Zm4.63 5.49A7 7 0 0 0 15 23.94v3a11.93 11.93 0 0 1-5.41-2.23Zm8.66 0l2.16 2.16A11.93 11.93 0 0 1 17 26.94v-3a7 7 0 0 0 3.41-1.39M22.88 17h3.05a11.93 11.93 0 0 1-3.52 6.71l-2.16-2.16A7 7 0 0 0 22.88 17"/></symbol>
+  <symbol id="i-dot" viewBox="0 0 32 32"><circle cx="16" cy="16" r="10" fill="currentColor"/><path d="M16 30a14 14 0 1 1 14-14a14.016 14.016 0 0 1-14 14m0-26a12 12 0 1 0 12 12A12.014 12.014 0 0 0 16 4"/></symbol>
+</svg>
+
+<div class="system-shell">
+  <aside class="system-nav">
+    <div class="system-brand">
+      <div class="logo"><span class="logo-dot"></span><span class="logo-strong">baor.live</span><span><span class="logo-brand">GetNow</span><span class="logo-core">Pharmacy</span></span></div>
+      <div class="system-title">Dashboard UI catalog</div>
+    </div>
+    <nav aria-label="Design system sections">
+      <a href="#colors">Colors</a>
+      <a href="#type">Typography</a>
+      <a href="#scale">Spacing, radius, motion</a>
+      <a href="#chrome">Topbar and filters</a>
+      <a href="#workspace">Dashboard components</a>
+      <a href="#badges">Badges and states</a>
+      <a href="#icons">Icons</a>
+      <a href="#popups">Popups and modals</a>
+    </nav>
+  </aside>
+
+  <main class="system-content">
+    <header class="catalog-header">
+      <div>
+        <div class="catalog-kicker">RxFlow Orders</div>
+        <h1>Dashboard design system inventory</h1>
+        <p class="catalog-sub">A standalone HTML reference for the Next.js dashboard UI: the same token names, dashboard class patterns, fonts, colors, states, and working components used across the order flow.</p>
+      </div>
+      <div class="catalog-meta">Next.js · App Router<br>Token pipeline: f→s→c<br>rxflow-orders</div>
+    </header>
+
+    <section id="colors" class="catalog-section">
+      <div class="section-head">
+        <div>
+          <h2>Colors</h2>
+          <p class="section-note">Three generated layers — <strong>foundation.css</strong> → <strong>semantic.css</strong> → <strong>component.css</strong> — are loaded in pipeline order by <code>layout.tsx</code>. CSS rules use <strong>--s-*</strong> (semantic) or <strong>--c-*</strong> (component) only. Never <strong>--f-*</strong> in CSS rules.</p>
+        </div>
+      </div>
+      <div class="grid cols-4">
+        <div class="token-row"><span class="swatch" style="--swatch:var(--s-action-primary)"></span><div><div class="token-name">--s-action-primary</div><div class="token-use">Primary action, CTA bg</div></div><div class="token-value">#3675ff</div></div>
+        <div class="token-row"><span class="swatch" style="--swatch:var(--s-action-hover)"></span><div><div class="token-name">--s-action-hover</div><div class="token-use">Hover action</div></div><div class="token-value">#4e86ff</div></div>
+        <div class="token-row"><span class="swatch" style="--swatch:var(--s-action-subtle)"></span><div><div class="token-name">--s-action-subtle</div><div class="token-use">Focus ring, rx tag</div></div><div class="token-value">#c7d8ff</div></div>
+        <div class="token-row"><span class="swatch" style="--swatch:var(--s-text-primary)"></span><div><div class="token-name">--s-text-primary</div><div class="token-use">Primary text</div></div><div class="token-value">#1E222B</div></div>
+        <div class="token-row"><span class="swatch" style="--swatch:var(--s-text-secondary)"></span><div><div class="token-name">--s-text-secondary</div><div class="token-use">Secondary text</div></div><div class="token-value">#4D5360</div></div>
+        <div class="token-row"><span class="swatch" style="--swatch:var(--s-text-muted)"></span><div><div class="token-name">--s-text-muted</div><div class="token-use">Muted text</div></div><div class="token-value">#666C78</div></div>
+        <div class="token-row"><span class="swatch" style="--swatch:var(--s-text-tertiary)"></span><div><div class="token-name">--s-text-tertiary</div><div class="token-use">Tertiary / label</div></div><div class="token-value">#6E7580</div></div>
+        <div class="token-row"><span class="swatch" style="--swatch:var(--s-text-disabled)"></span><div><div class="token-name">--s-text-disabled</div><div class="token-use">Disabled / placeholder</div></div><div class="token-value">#A8ACB7</div></div>
+        <div class="token-row"><span class="swatch" style="--swatch:var(--s-page)"></span><div><div class="token-name">--s-page</div><div class="token-use">App background</div></div><div class="token-value">#F7F7F8</div></div>
+        <div class="token-row"><span class="swatch" style="--swatch:var(--s-surface)"></span><div><div class="token-name">--s-surface</div><div class="token-use">Panel / card bg</div></div><div class="token-value">#FFFFFF</div></div>
+        <div class="token-row"><span class="swatch" style="--swatch:var(--s-border-default)"></span><div><div class="token-name">--s-border-default</div><div class="token-use">Standard dividers</div></div><div class="token-value">#DDDEE2</div></div>
+        <div class="token-row"><span class="swatch" style="--swatch:var(--s-success)"></span><div><div class="token-name">--s-success</div><div class="token-use">Done / paid</div></div><div class="token-value">#1F9D55</div></div>
+        <div class="token-row"><span class="swatch" style="--swatch:var(--s-error)"></span><div><div class="token-name">--s-error</div><div class="token-use">Reject / alert</div></div><div class="token-value">#E6412E</div></div>
+        <div class="token-row"><span class="swatch" style="--swatch:var(--s-warning-action)"></span><div><div class="token-name">--s-warning-action</div><div class="token-use">Verify payment CTA</div></div><div class="token-value">#FC7405</div></div>
+        <div class="token-row"><span class="swatch" style="--swatch:var(--s-status-review-bg)"></span><div><div class="token-name">--s-status-review-bg</div><div class="token-use">Order review badge</div></div><div class="token-value">#64FCBA</div></div>
+        <div class="token-row"><span class="swatch" style="--swatch:var(--s-status-packing-bg)"></span><div><div class="token-name">--s-status-packing-bg</div><div class="token-use">Packing badge</div></div><div class="token-value">#FCE364</div></div>
+        <div class="token-row"><span class="swatch" style="--swatch:var(--s-rx-badge-bg)"></span><div><div class="token-name">--s-rx-badge-bg</div><div class="token-use">Prescription tag</div></div><div class="token-value">#DCE9FF</div></div>
+        <div class="token-row"><span class="swatch" style="--swatch:var(--s-overlay)"></span><div><div class="token-name">--s-overlay</div><div class="token-use">Modal scrim</div></div><div class="token-value">rgba(18,21,27,.64)</div></div>
+        <div class="token-row"><span class="swatch" style="--swatch:var(--s-info-subtle)"></span><div><div class="token-name">--s-info-subtle</div><div class="token-use">Info / new message</div></div><div class="token-value">#EAF4FF</div></div>
+        <div class="token-row"><span class="swatch" style="--swatch:var(--s-success-pale-bg)"></span><div><div class="token-name">--s-success-pale-bg</div><div class="token-use">Paid / cod badge bg</div></div><div class="token-value">#ECF9F2</div></div>
+        <div class="token-row"><span class="swatch" style="--swatch:var(--s-warning-pale-bg)"></span><div><div class="token-name">--s-warning-pale-bg</div><div class="token-use">Unpaid badge bg</div></div><div class="token-value">#FFF7E8</div></div>
+        <div class="token-row"><span class="swatch" style="--swatch:var(--s-error-pale-bg)"></span><div><div class="token-name">--s-error-pale-bg</div><div class="token-use">Out-of-stock badge</div></div><div class="token-value">#FDEDEC</div></div>
+        <div class="token-row"><span class="swatch" style="--swatch:var(--s-brand-icon-bg)"></span><div><div class="token-name">--s-brand-icon-bg</div><div class="token-use">Toast icon bg</div></div><div class="token-value">#2563EB</div></div>
+        <div class="token-row"><span class="swatch" style="--swatch:var(--s-text-display)"></span><div><div class="token-name">--s-text-display</div><div class="token-use">Logo / hero text</div></div><div class="token-value">#111111</div></div>
+      </div>
+    </section>
+
+    <section id="type" class="catalog-section">
+      <div class="section-head">
+        <div>
+          <h2>Typography</h2>
+          <p class="section-note">Only five type sizes, two font families, three line-height tokens, and normal tracking are allowed in dashboard UI.</p>
+        </div>
+      </div>
+
+      <div>
+        <table class="scale-table">
+          <tr><th>Preview</th><th>Scale, spec, and rule</th></tr>
+          <tr>
+            <td class="type-preview-cell"><span class="type-buyer">Nguyen Thi Lan</span></td>
+            <td class="type-preview-meta"><span class="type-preview-token">--s-size-3xl / 28px</span><span>Spec: 600-620 / 1.0 leading / 0 tracking</span><span>Use only for: primary identity, buyer names, order IDs</span></td>
+          </tr>
+          <tr>
+            <td class="type-preview-cell"><span class="type-mono-lg">425.000đ</span></td>
+            <td class="type-preview-meta"><span class="type-preview-token">--s-size-2xl / 18px</span><span>Spec: 700 / 1.0 or 1.2 leading / 0 tracking</span><span>Use only for: totals and compact headings</span></td>
+          </tr>
+          <tr>
+            <td class="type-preview-cell"><span class="type-title">Prescription review</span></td>
+            <td class="type-preview-meta"><span class="type-preview-token">--s-size-xl / 16px</span><span>Spec: 620 / 1.2 leading / 0 tracking</span><span>Use only for: titles, buyer IDs, secondary emphasis</span></td>
+          </tr>
+          <tr>
+            <td class="type-preview-cell"><span class="type-body">Requires original prescription on delivery.</span></td>
+            <td class="type-preview-meta"><span class="type-preview-token">--s-size-md / 14px</span><span>Spec: 400-700 / 1.2 or 1.5 leading / 0 tracking</span><span>Use only for: default UI, body copy, buttons, tabs, badges</span></td>
+          </tr>
+          <tr>
+            <td class="type-preview-cell"><span class="type-micro">RX / PAID</span></td>
+            <td class="type-preview-meta"><span class="type-preview-token">--s-size-sm / 12px</span><span>Spec: 500 / inherit leading / 0 tracking</span><span>Use only for: micro labels, tiny counts, compact metadata</span></td>
+          </tr>
+          <tr>
+            <td class="type-preview-cell"><strong>Family rule</strong></td>
+            <td>Use <strong>--s-font-sans</strong> for UI copy. Use <strong>--s-font-numeric</strong> only for order IDs, prices, counts, timestamps, and scan codes.</td>
+          </tr>
+          <tr>
+            <td class="type-preview-cell"><strong>Token rule</strong></td>
+            <td>Use only <strong>--s-size-*</strong>, <strong>--s-leading-none</strong>, <strong>--s-leading-normal</strong>, <strong>--s-leading-body</strong>, and <strong>--s-tracking-normal</strong>. Do not use raw px, custom font stacks, or <strong>--f-*</strong> tokens in component CSS.</td>
+          </tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="scale" class="catalog-section">
+      <div class="section-head">
+        <div>
+          <h2>Scale</h2>
+          <p class="section-note">The dashboard uses fixed operational measurements: compact rows, 54px primary controls, 42px secondary controls, and square edges only — border-radius is 0 throughout (logo dot is the only circle).</p>
+        </div>
+      </div>
+      <div class="grid cols-3">
+        <table class="scale-table">
+          <tr><th>Spacing</th><th>Value</th></tr>
+          <tr><td>space.1</td><td>4px</td></tr>
+          <tr><td>space.2</td><td>8px</td></tr>
+          <tr><td>space.3</td><td>12px</td></tr>
+          <tr><td>space.4</td><td>16px</td></tr>
+          <tr><td>space.5</td><td>20px</td></tr>
+          <tr><td>space.6</td><td>24px</td></tr>
+          <tr><td>space.8</td><td>32px</td></tr>
+        </table>
+        <table class="scale-table">
+          <tr><th>Component</th><th>Value</th></tr>
+          <tr><td>Topbar height</td><td>52px</td></tr>
+          <tr><td>Order row min height</td><td>132px</td></tr>
+          <tr><td>Detail tab height</td><td>54px</td></tr>
+          <tr><td>Main button</td><td>54px</td></tr>
+          <tr><td>Sub button</td><td>42px</td></tr>
+          <tr><td>Detail width</td><td>36vw</td></tr>
+        </table>
+        <table class="scale-table">
+          <tr><th>Motion token</th><th>Value</th></tr>
+          <tr><td>--s-motion-fast</td><td>100ms</td></tr>
+          <tr><td>--s-motion-alpha</td><td>180ms</td></tr>
+          <tr><td>--s-motion-subtle</td><td>200ms</td></tr>
+          <tr><td>--s-motion-collapse</td><td>260ms</td></tr>
+          <tr><td>--s-motion-normal</td><td>280ms</td></tr>
+          <tr><td>--s-motion-leave</td><td>400ms</td></tr>
+          <tr><td>--s-motion-enter</td><td>420ms</td></tr>
+          <tr><td>--s-motion-scan</td><td>520ms</td></tr>
+          <tr><td>--s-motion-reveal</td><td>600ms</td></tr>
+          <tr><td>--s-motion-progress</td><td>900ms</td></tr>
+          <tr><td>--s-motion-spring</td><td>cubic-bezier(0.22,1,0.36,1)</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="chrome" class="catalog-section">
+      <div class="section-head">
+        <div>
+          <h2>Topbar And Filters</h2>
+          <p class="section-note">Global chrome includes brand lockup, receiving switch, pharmacist identity, icon buttons, filter chips, dropdown filters, and search.</p>
+        </div>
+      </div>
+      <div class="component-stage">
+        <header class="topbar panel">
+          <div class="topbar-left">
+            <div class="logo"><span class="logo-dot"></span><span class="logo-strong">baor.live</span><span><span class="logo-brand">GetNow</span><span class="logo-core">Pharmacy</span></span></div>
+          </div>
+          <div class="topbar-right">
+            <button class="incoming-receive-toggle is-on" type="button"><span class="incoming-receive-track"><span class="incoming-receive-thumb"></span></span><span class="incoming-receive-copy"><span class="incoming-receive-label">New Orders</span><span class="incoming-receive-state">Receiving</span></span></button>
+            <div class="session-owner"><span class="session-owner-label">Pharmacist</span><span class="session-owner-name">Mrs. Hong</span></div>
+            <button class="topbar-icon-btn" type="button" aria-label="Notifications"><svg class="ui-icon"><use href="#i-notification"></use></svg></button>
+            <button class="topbar-icon-btn" type="button" aria-label="Settings"><svg class="ui-icon"><use href="#i-time"></use></svg></button>
+          </div>
+        </header>
+        <div class="list-filters">
+          <div class="topbar-mid">
+            <button class="stat-chip active" type="button">All <span class="stat-chip-badge">18</span></button>
+            <button class="stat-chip" type="button">New <span class="stat-chip-badge">5</span></button>
+            <button class="stat-chip" type="button">Preparing <span class="stat-chip-badge">3</span></button>
+            <button class="stat-chip" type="button">Packed <span class="stat-chip-badge">2</span></button>
+            <div class="stat-dropdown-wrap">
+              <button class="stat-dropdown-trigger" type="button"><span>Others</span><span class="stat-chip-badge">8</span><span class="stat-dropdown-caret" aria-hidden="true"></span></button>
+              <div class="stat-dropdown-menu">
+                <button class="stat-dropdown-item" type="button"><span>Delivering</span><span class="stat-chip-badge">3</span></button>
+                <button class="stat-dropdown-item active" type="button"><span>Delivered</span><span class="stat-chip-badge">4</span></button>
+                <button class="stat-dropdown-item" type="button"><span>Completed</span><span class="stat-chip-badge">1</span></button>
+              </div>
+            </div>
+          </div>
+          <div class="list-search is-expanded" style="--search-expanded-width: 220px">
+            <div class="search-wrap">
+              <span class="search-icon" aria-hidden="true"><svg class="ui-icon"><use href="#i-search"></use></svg></span>
+              <input class="search-input" type="text" placeholder="Search name or order ID…" aria-label="Search orders">
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="workspace" class="catalog-section">
+      <div class="section-head">
+        <div>
+          <h2>Dashboard Components</h2>
+          <p class="section-note">Module-based snapshots mapped to Next.js components. Keep these blocks in lockstep with the app modules so visual sync stays predictable.</p>
+        </div>
+      </div>
+      <div class="module-workspace">
+        <div class="module-block">
+          <div class="module-head">
+            <div class="module-title">layout/Topbar + list/FilterBar</div>
+            <div class="module-paths">src/components/layout/Topbar.tsx<br>src/components/list/FilterBar.tsx</div>
+          </div>
+          <div class="component-stage">
+            <header class="topbar panel">
+              <div class="topbar-left">
+                <div class="logo"><div class="logo-dot"></div><span class="logo-strong">baor.live</span><span><span class="logo-brand">GetNow</span><span class="logo-core">Pharmacy</span></span></div>
+              </div>
+              <div class="topbar-right">
+                <button id="incoming-receive-toggle" class="incoming-receive-toggle is-on" type="button" role="switch" aria-checked="true"><span class="incoming-receive-track" aria-hidden="true"><span class="incoming-receive-thumb"></span></span><span class="incoming-receive-copy"><span class="incoming-receive-label">New Orders</span><span class="incoming-receive-state">Receiving</span></span></button>
+                <div class="session-owner"><span class="session-owner-label">Pharmacist</span><span class="session-owner-name">Mrs. Hong</span></div>
+                <button class="topbar-icon-btn" type="button" aria-label="Notifications" title="Notifications">
+                  <svg class="ui-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M10.268 21a2 2 0 0 0 3.464 0" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                  </svg>
+                </button>
+                <button class="topbar-icon-btn" type="button" aria-label="Settings" title="Settings">
+                  <svg class="ui-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M3.828 9.56a3.1 3.1 0 0 1-.002 4.865 2 2 0 0 0 1.98 3.425 3.1 3.1 0 0 1 4.211 2.434 2 2 0 0 0 3.958.002 3.1 3.1 0 0 1 4.213-2.431 2 2 0 0 0 1.983-3.424 3.1 3.1 0 0 1 .001-4.866 2 2 0 0 0-1.978-3.425 3.1 3.1 0 0 1-4.214-2.421 2 2 0 0 0-3.961.004A3.1 3.1 0 0 1 5.81 6.135 2 2 0 0 0 3.828 9.56" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                    <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.9" fill="none"/>
+                  </svg>
+                </button>
+              </div>
+            </header>
+            <div class="list-filters">
+              <div class="topbar-mid">
+                <button class="stat-chip active" type="button">All <span class="stat-chip-badge">18</span></button>
+                <button class="stat-chip" type="button">New <span class="stat-chip-badge">5</span></button>
+                <button class="stat-chip" type="button">Preparing <span class="stat-chip-badge">3</span></button>
+                <button class="stat-chip" type="button">Packed <span class="stat-chip-badge">2</span></button>
+                <div class="stat-dropdown-wrap">
+                  <button class="stat-dropdown-trigger" type="button"><span>Others</span><span class="stat-chip-badge">8</span><span class="stat-dropdown-caret" aria-hidden="true"></span></button>
+                  <div class="stat-dropdown-menu">
+                    <button class="stat-dropdown-item" type="button"><span>Delivering</span><span class="stat-chip-badge">3</span></button>
+                    <button class="stat-dropdown-item active" type="button"><span>Delivered</span><span class="stat-chip-badge">4</span></button>
+                    <button class="stat-dropdown-item" type="button"><span>Completed</span><span class="stat-chip-badge">1</span></button>
+                  </div>
+                </div>
+              </div>
+              <div class="list-search is-expanded" style="--search-expanded-width: 220px">
+                <div class="search-wrap">
+                  <span class="search-icon" aria-hidden="true"><svg class="ui-icon"><use href="#i-search"></use></svg></span>
+                  <input class="search-input" type="text" placeholder="Search name or order ID…" aria-label="Search orders">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="module-block">
+          <div class="module-head">
+            <div class="module-title">list/ListPanel + list/OrderRow</div>
+            <div class="module-paths">src/components/list/ListPanel.tsx<br>src/components/list/OrderRow.tsx</div>
+          </div>
+          <div class="list-panel" style="border:none">
+          <div class="list-filters">
+            <div class="topbar-mid">
+              <button class="stat-chip active" type="button">All <span class="stat-chip-badge">9</span></button>
+              <button class="stat-chip" type="button">New <span class="stat-chip-badge">2</span></button>
+              <button class="stat-chip" type="button">Preparing <span class="stat-chip-badge">1</span></button>
+              <button class="stat-chip" type="button">Packed <span class="stat-chip-badge">1</span></button>
+              <div class="stat-dropdown-wrap">
+                <button class="stat-dropdown-trigger" type="button"><span>Others</span><span class="stat-chip-badge">5</span><span class="stat-dropdown-caret" aria-hidden="true"></span></button>
+                <div class="stat-dropdown-menu">
+                  <button class="stat-dropdown-item" type="button"><span>Delivering</span><span class="stat-chip-badge">2</span></button>
+                  <button class="stat-dropdown-item" type="button"><span>Delivered</span><span class="stat-chip-badge">2</span></button>
+                  <button class="stat-dropdown-item" type="button"><span>Completed</span><span class="stat-chip-badge">1</span></button>
+                </div>
+              </div>
+            </div>
+            <div class="list-search is-expanded" style="--search-expanded-width: 220px">
+              <div class="search-wrap">
+                <span class="search-icon" aria-hidden="true"><svg class="ui-icon"><use href="#i-search"></use></svg></span>
+                <input class="search-input" type="text" value="amoxicillin" placeholder="Search name or order ID…" aria-label="Search orders">
+              </div>
+            </div>
+          </div>
+          <div class="list-scroll">
+          <div class="order-row active" role="button" tabindex="0" aria-selected="true">
+            <div class="row-body">
+              <div class="row-left">
+                <div class="row-name-line">
+                  <span class="row-name">Tran Minh Anh</span>
+                  <span class="row-rx-badge"><svg class="ui-icon"><use href="#i-document"></use></svg><span>Prescription</span></span>
+                </div>
+                <div class="row-note">"Please check the prescription image before packing."</div>
+                <div class="row-item-summary">
+                  <span class="row-item-count-badge" aria-label="3 items">3</span>
+                  <span class="row-item-summary-text">
+                    <span class="row-item-chip"><span class="row-item-chip-name">Amoxicillin 500mg</span><span class="row-item-chip-qty">×1</span></span>
+                    <span class="row-item-chip"><span class="row-item-sep">·</span><span class="row-item-chip-name">ORS sachets</span><span class="row-item-chip-qty">×4</span></span>
+                    <span class="row-item-chip row-item-chip-more"><span class="row-item-chip-name">+1 more</span></span>
+                  </span>
+                </div>
+                <div class="row-price-line">
+                  <div class="row-total">184,000đ</div>
+                  <div><span class="pay-badge paid">Paid</span></div>
+                </div>
+              </div>
+              <div class="row-right">
+                <div class="row-kicker row-kicker-right">
+                  <span class="row-code">#RX-104</span>
+                  <span class="row-created">09:42 AM</span>
+                </div>
+                <div class="row-stage-meta">
+                  <span class="row-status-badge status-order-review">Review</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="order-row" role="button" tabindex="0" aria-selected="false">
+            <div class="row-body">
+              <div class="row-left">
+                <div class="row-name-line">
+                  <span class="row-name">Le Bao Chau</span>
+                </div>
+                <div class="row-note">"Deliver to building lobby."</div>
+                <div class="row-item-summary">
+                  <span class="row-item-count-badge" aria-label="2 items">2</span>
+                  <span class="row-item-summary-text">
+                    <span class="row-item-chip"><span class="row-item-chip-name">Panadol Extra</span><span class="row-item-chip-qty">×1</span></span>
+                    <span class="row-item-chip"><span class="row-item-sep">·</span><span class="row-item-chip-name">Vitamin C</span><span class="row-item-chip-qty">×1</span></span>
+                  </span>
+                </div>
+                <div class="row-price-line">
+                  <div class="row-total">91,000đ</div>
+                  <div><span class="pay-badge unpaid">Unpaid</span></div>
+                </div>
+              </div>
+              <div class="row-right">
+                <div class="row-kicker row-kicker-right">
+                  <span class="row-code">#RX-103</span>
+                  <span class="row-created">09:18 AM</span>
+                </div>
+                <div class="row-stage-meta">
+                  <span class="row-status-badge status-waiting-payment">Waiting payment</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          </div>
+          </div>
+        </div>
+
+        <div class="module-block">
+          <div class="module-head">
+            <div class="module-title">detail/DetailPanel</div>
+            <div class="module-paths">src/components/detail/DetailPanel.tsx (+ BuyerCard, Tabs, Fulfillment, Messages, ActionFooter)</div>
+          </div>
+          <div class="detail-panel">
+            <!-- BuyerCard: sits above tabs, outside scroll -->
+            <div class="buyer-card">
+              <div class="buyer-identity-group">
+                <div class="buyer-primary-block">
+                  <div class="buyer-row">
+                    <div class="buyer-id">RX-104 · 09:38</div>
+                  </div>
+                  <div class="buyer-name-phone">
+                    <span class="buyer-name">Tran Minh Anh</span>
+                    <span class="buyer-name-dot">·</span>
+                    <span class="buyer-phone-inline">090 123 4567</span>
+                  </div>
+                  <div class="buyer-history-actions">
+                    <button class="rx-view-btn" type="button">
+                      <span class="rx-icon"><svg class="ui-icon"><use href="#i-time"></use></svg></span>
+                      <span>Order History</span>
+                    </button>
+                  </div>
+                </div>
+                <div class="buyer-meta-grid">
+                  <div class="binfo body order-state">
+                    <span class="binfo-label">State</span>
+                    <span class="binfo-val"><span class="row-status-badge status-packing">Packing</span></span>
+                  </div>
+                  <div class="binfo body shipping-by">
+                    <span class="binfo-label">Shipping by</span>
+                    <span class="binfo-val">Ahamove</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- DetailTabs: Items + Messages -->
+            <div class="detail-tabs">
+              <button class="detail-tab active" type="button">Items <span class="detail-tab-badge">3</span></button>
+              <button class="detail-tab" type="button">Messages <span class="detail-tab-badge is-alert">2</span></button>
+            </div>
+            <!-- Scrollable area with two tab panes -->
+            <div class="detail-scroll">
+              <!-- Messages pane (inactive) -->
+              <div class="tab-pane">
+                <div class="messages-section">
+                  <div class="section-header">
+                    <span class="binfo-label">Messages</span>
+                    <span class="unread-count">2 new</span>
+                  </div>
+                  <div class="messages-list">
+                    <div class="msg-bubble">
+                      <div class="msg-meta"><span class="msg-sender from-buyer">Tran Minh Anh</span><span class="msg-time">09:41</span></div>
+                      <div class="msg-text from-buyer unread">I uploaded the prescription image. <span class="msg-inline-icon"><svg class="ui-icon" style="width:13px;height:13px"><use href="#i-image"></use></svg></span></div>
+                    </div>
+                    <div class="msg-bubble is-own">
+                      <div class="msg-meta"><span class="msg-sender">You</span><span class="msg-time">09:42</span></div>
+                      <div class="msg-text">Checking now.</div>
+                    </div>
+                  </div>
+                  <div class="msg-input-row">
+                    <input class="msg-input" type="text" placeholder="Reply…">
+                    <button class="msg-send-btn" type="button">Send</button>
+                  </div>
+                </div>
+              </div>
+              <!-- Fulfillment pane (active) -->
+              <div class="tab-pane active">
+                <div class="user-note-card">
+                  <div class="user-note-title">User Note</div>
+                  <div class="user-note-text">Cần gấp, người bệnh đang sốt cao.</div>
+                  <div class="user-note-actions">
+                    <button class="rx-view-btn" type="button">
+                      <span class="rx-icon"><svg class="ui-icon"><use href="#i-document"></use></svg></span>
+                      <span>View Prescription</span>
+                    </button>
+                  </div>
+                </div>
+                <div class="items-section">
+                  <div class="item-row">
+                    <div class="item-info">
+                      <span class="item-qty">×<span class="item-qty-number">1</span></span>
+                      <div class="item-name-exp">
+                        <div class="item-name">Amoxicillin 500mg</div>
+                        <span class="item-exp">exp 12/2025</span>
+                        <div class="item-stock-badge in-stock">In Stock</div>
+                      </div>
+                      <span class="item-pack-badge is-packed">Packed</span>
+                    </div>
+                    <div class="item-price">84,000đ</div>
+                  </div>
+                  <div class="item-row">
+                    <div class="item-info">
+                      <span class="item-qty">×<span class="item-qty-number">4</span></span>
+                      <div class="item-name-exp">
+                        <div class="item-name">ORS sachets</div>
+                        <span class="item-exp">exp 06/2025</span>
+                        <div class="item-stock-badge need-check">Check</div>
+                      </div>
+                      <span class="item-pack-badge is-pending-pack">Pending</span>
+                    </div>
+                    <div class="item-price">60,000đ</div>
+                  </div>
+                  <div class="item-row">
+                    <div class="item-info">
+                      <span class="item-qty">×<span class="item-qty-number">2</span></span>
+                      <div class="item-name-exp">
+                        <div class="item-name">Paracetamol 500mg</div>
+                        <div class="item-stock-badge out-of-stock">Out of Stock</div>
+                      </div>
+                    </div>
+                    <div class="item-price">24,000đ</div>
+                  </div>
+                </div>
+                <div class="summary-section">
+                  <div class="sum-row">
+                    <span class="sum-label">Subtotal</span>
+                    <span class="sum-val">168,000đ</span>
+                  </div>
+                  <div class="sum-row">
+                    <span class="sum-label">Delivery</span>
+                    <span class="sum-val">15,000đ</span>
+                  </div>
+                  <div class="sum-divider"></div>
+                  <div class="sum-row sum-total">
+                    <span class="sum-label">Total</span>
+                    <span class="sum-val">183,000đ</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- ActionFooter -->
+            <div class="action-footer">
+              <button class="main-action has-sub" type="button" id="main-action-btn" data-action-type="accept">
+                <span class="main-action-content main-action-content-base">
+                  <span class="main-action-title">Confirm and Pack</span>
+                  <span class="main-action-sub"></span>
+                </span>
+              </button>
+              <div class="sub-actions">
+                <button class="sub-btn" type="button"><svg class="ui-icon"><use href="#i-phone"></use></svg><span>Call Buyer</span></button>
+                <button class="sub-btn" type="button">Reject Order</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="badges" class="catalog-section">
+      <div class="section-head">
+        <div>
+          <h2>Badges And States</h2>
+          <p class="section-note">State badges are intentionally compact and scan-first, with color reserved for workflow meaning.</p>
+        </div>
+      </div>
+      <div class="grid cols-2">
+        <div class="panel" style="padding:16px;display:flex;gap:8px;flex-wrap:wrap;align-content:start">
+          <span class="pay-badge paid">Paid</span><span class="pay-badge unpaid">Unpaid</span><span class="pay-badge cod">COD</span><span class="msg-badge">3</span><span class="row-rx-badge"><svg class="ui-icon"><use href="#i-document"></use></svg>Rx</span>
+        </div>
+        <div class="panel" style="padding:16px;display:flex;gap:8px;flex-wrap:wrap;align-content:start">
+          <span class="row-status-badge status-new">New</span><span class="row-status-badge status-order-review">Review</span><span class="row-status-badge status-packing">Packing</span><span class="row-status-badge status-ready-to-ship">Ready to ship</span><span class="row-status-badge status-delivered">Delivered</span><span class="row-status-badge status-cancelled">Cancelled</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="icons" class="catalog-section">
+      <div class="section-head">
+        <div>
+          <h2>Icons</h2>
+          <p class="section-note">The dashboard icon set is embedded as 32px SVG symbols matching the Next.js Icon component names.</p>
+        </div>
+      </div>
+      <div class="icon-grid">
+        <div class="icon-tile"><svg class="ui-icon"><use href="#i-search"></use></svg><span>search</span></div>
+        <div class="icon-tile"><svg class="ui-icon"><use href="#i-check"></use></svg><span>check</span></div>
+        <div class="icon-tile"><svg class="ui-icon"><use href="#i-close"></use></svg><span>close</span></div>
+        <div class="icon-tile"><svg class="ui-icon"><use href="#i-time"></use></svg><span>time</span></div>
+        <div class="icon-tile"><svg class="ui-icon"><use href="#i-document"></use></svg><span>document</span></div>
+        <div class="icon-tile"><svg class="ui-icon"><use href="#i-medication"></use></svg><span>medication</span></div>
+        <div class="icon-tile"><svg class="ui-icon"><use href="#i-pills"></use></svg><span>pills</span></div>
+        <div class="icon-tile"><svg class="ui-icon"><use href="#i-box"></use></svg><span>box</span></div>
+        <div class="icon-tile"><svg class="ui-icon"><use href="#i-send"></use></svg><span>send</span></div>
+        <div class="icon-tile"><svg class="ui-icon"><use href="#i-image"></use></svg><span>image</span></div>
+        <div class="icon-tile"><svg class="ui-icon"><use href="#i-user"></use></svg><span>user</span></div>
+        <div class="icon-tile"><svg class="ui-icon"><use href="#i-chat"></use></svg><span>chat</span></div>
+        <div class="icon-tile"><svg class="ui-icon"><use href="#i-notification"></use></svg><span>notification</span></div>
+        <div class="icon-tile"><svg class="ui-icon"><use href="#i-phone"></use></svg><span>phone</span></div>
+        <div class="icon-tile"><svg class="ui-icon"><use href="#i-hourglass"></use></svg><span>hourglass</span></div>
+        <div class="icon-tile"><svg class="ui-icon"><use href="#i-error"></use></svg><span>error</span></div>
+        <div class="icon-tile"><svg class="ui-icon"><use href="#i-printer"></use></svg><span>printer</span></div>
+        <div class="icon-tile"><svg class="ui-icon"><use href="#i-bottleA"></use></svg><span>bottleA</span></div>
+        <div class="icon-tile"><svg class="ui-icon"><use href="#i-bottleB"></use></svg><span>bottleB</span></div>
+        <div class="icon-tile"><svg class="ui-icon"><use href="#i-lifebuoy"></use></svg><span>lifebuoy</span></div>
+        <div class="icon-tile"><svg class="ui-icon"><use href="#i-dot"></use></svg><span>dot</span></div>
+      </div>
+    </section>
+
+    <section id="popups" class="catalog-section">
+      <div class="section-head">
+        <div>
+          <h2>Popups And Modals</h2>
+          <p class="section-note">Incoming order, reject reason, prescription viewer, barcode scan, and toast treatments use the same surface, overlay, and action tokens.</p>
+        </div>
+      </div>
+      <div class="popup-gallery">
+        <div class="incoming-popup-card" role="dialog" aria-modal="true" aria-labelledby="incoming-order-meta">
+          <div class="incoming-popup-summary">
+            <div class="incoming-popup-order-meta" id="incoming-order-meta">New Order RX-001 · 9:38 AM</div>
+            <div class="incoming-popup-order-top">
+              <div class="incoming-popup-order-name">Nguyen Thi Lan</div>
+              <div class="incoming-popup-order-phone">0912 345 678</div>
+            </div>
+          </div>
+          <div class="incoming-popup-section">
+            <div class="incoming-popup-section-title">User Note</div>
+            <div class="incoming-popup-rx-row"><span class="row-rx-badge"><svg class="ui-icon"><use href="#i-document"></use></svg><span>Prescription</span></span></div>
+            <div class="incoming-popup-note">Requires original prescription on delivery. Please call before dispatch because the buyer will hand over the physical prescription at drop-off, and requests pharmacist confirmation for dosage and expiry before packing.</div>
+          </div>
+          <div class="incoming-popup-section">
+            <div class="incoming-popup-section-title incoming-popup-items-title"><span>Items</span><span class="row-item-count-badge" aria-label="6 items">6</span></div>
+            <div class="incoming-popup-order-items">
+              <div class="row-item-summary"><span class="row-item-summary-text"><span class="row-item-chip"><span class="row-item-chip-name">Augmentin 625mg</span><span class="row-item-chip-qty">×10</span></span></span></div>
+              <div class="row-item-summary"><span class="row-item-summary-text"><span class="row-item-chip"><span class="row-item-chip-name">Vitamin C 1000mg</span><span class="row-item-chip-qty">×1</span></span></span></div>
+              <div class="row-item-summary"><span class="row-item-summary-text"><span class="row-item-chip"><span class="row-item-chip-name">Cetirizine 10mg</span><span class="row-item-chip-qty">×1</span></span></span></div>
+              <div class="row-item-summary"><span class="row-item-summary-text"><span class="row-item-chip"><span class="row-item-chip-name">Saline Nasal Spray</span><span class="row-item-chip-qty">×1</span></span></span></div>
+              <div class="incoming-popup-more-row">+2 more items</div>
+            </div>
+            <div class="incoming-popup-items-total">
+              <span class="incoming-popup-order-total">425.000đ</span>
+              <span class="pay-badge paid">Paid</span>
+            </div>
+          </div>
+          <div class="incoming-popup-actions"><button class="incoming-btn ghost" type="button">Dismiss (10)</button><button class="incoming-btn primary" type="button">View order</button></div>
+        </div>
+        <div class="modal-pair">
+          <div class="reject-popup-card">
+            <div class="reject-popup-title">Reject Order</div>
+            <div class="reject-popup-sub">This order will be rejected. Please select a reason.</div>
+            <div class="reject-reason-list">
+              <button class="reject-reason-btn" type="button">Out of stock</button>
+              <button class="reject-reason-btn" type="button">Item discontinued</button>
+              <button class="reject-reason-btn active" type="button">Prescription invalid</button>
+              <button class="reject-reason-btn" type="button">Customer unresponsive</button>
+              <button class="reject-reason-btn" type="button">Unable to verify payment</button>
+              <button class="reject-reason-btn" type="button">Other</button>
+            </div>
+            <div class="reject-popup-actions"><button class="incoming-btn ghost" type="button">Keep Order</button><button class="reject-confirm-btn incoming-btn primary" type="button">Confirm Reject</button></div>
+          </div>
+          <div class="prescription-popup-card">
+            <div class="prescription-popup-title">Prescription</div>
+            <div class="prescription-image">
+              <div class="prescription-image-header"><span>City Health Clinic</span><span>RX-104</span></div>
+              <div class="prescription-image-line"></div>
+              <div class="prescription-image-line short"></div>
+              <div class="prescription-image-line medium"></div>
+              <div class="prescription-image-line short"></div>
+              <div class="prescription-image-line"></div>
+              <div class="prescription-image-line medium"></div>
+              <div class="prescription-image-line short"></div>
+            </div>
+            <div class="prescription-note-card">
+              <span class="prescription-note-label">Patient</span>
+              <div class="prescription-note-text">Tran Minh Anh · 090 123 4567</div>
+            </div>
+            <div class="prescription-note-card">
+              <span class="prescription-note-label">Items</span>
+              <div class="prescription-note-text">Amoxicillin 500mg — 500mg</div>
+              <div class="prescription-note-text">ORS sachets — 2 sachets</div>
+            </div>
+            <div class="prescription-note-card">
+              <span class="prescription-note-label">Status</span>
+              <div class="prescription-note-text">Pending Review</div>
+            </div>
+            <div class="prescription-popup-actions">
+              <button class="incoming-btn ghost" type="button">Close</button>
+              <button class="incoming-btn primary" type="button">Mark Verified</button>
+            </div>
+          </div>
+        </div>
+        <div class="barcode-popup-card is-scanning">
+          <div class="barcode-popup-header">
+            <div class="barcode-popup-title">Barcode Packing</div>
+            <div class="barcode-progress-meta"><span>2 / 3</span></div>
+          </div>
+          <div class="barcode-popup-sub">Scan each item barcode to confirm the correct medicine before packing.</div>
+          <div class="barcode-progress-track"><div class="barcode-progress-fill" style="width:66%"></div></div>
+          <div class="barcode-scan-list">
+            <div class="barcode-scan-row scanned" data-scan-index="0">
+              <div class="barcode-item-main">
+                <div class="barcode-item-copy">
+                  <div class="barcode-item-name-row"><span class="item-qty barcode-item-qty">×<span class="item-qty-number">1</span></span><div class="barcode-item-name">Amoxicillin 500mg</div><span class="barcode-item-exp is-visible">exp 08/2027</span></div>
+                </div>
+              </div>
+              <span class="barcode-status-badge scanned">ADDED</span>
+            </div>
+            <div class="barcode-scan-row scanning" data-scan-index="1">
+              <div class="barcode-item-main">
+                <div class="barcode-item-copy">
+                  <div class="barcode-item-name-row"><span class="item-qty barcode-item-qty">×<span class="item-qty-number">4</span></span><div class="barcode-item-name">ORS sachets</div><span class="barcode-item-exp">exp 01/2027</span></div>
+                </div>
+              </div>
+              <span class="barcode-status-badge scanning">SCANNING...</span>
+            </div>
+            <div class="barcode-scan-row waiting" data-scan-index="2">
+              <div class="barcode-item-main">
+                <div class="barcode-item-copy">
+                  <div class="barcode-item-name-row"><span class="item-qty barcode-item-qty">×<span class="item-qty-number">2</span></span><div class="barcode-item-name">Vitamin C 500mg</div><span class="barcode-item-exp">exp 12/2026</span></div>
+                </div>
+              </div>
+              <span class="barcode-status-badge waiting">QUEUED</span>
+            </div>
+          </div>
+          <div class="barcode-popup-actions barcode-popup-actions-bottom">
+            <button class="barcode-cancel-btn barcode-cancel-btn-bottom barcode-action-btn is-visible" type="button" aria-label="Cancel barcode packing">Cancel</button>
+            <button class="incoming-btn barcode-close-btn is-ready primary barcode-action-btn is-hidden" type="button" tabindex="-1">Ready for Pickup</button>
+          </div>
+        </div>
+        <div style="margin-top:16px"><div class="toast"><span class="toast-icon"><svg class="ui-icon"><use href="#i-send"></use></svg></span><span class="toast-msg">Message sent</span></div></div>
+      </div>
+    </section>
+  </main>
+</div>
+</body>
+</html>

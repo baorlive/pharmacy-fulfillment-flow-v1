@@ -28,11 +28,16 @@ const DROPDOWN_FILTERS: { key: FilterKey; label: string }[] = [
 ];
 
 const DROPDOWN_FILTER_KEYS = new Set(DROPDOWN_FILTERS.map(f => f.key));
+const SEARCH_COLLAPSED_WIDTH_PX = 54;
+const SEARCH_WIDTH_SIDE_PADDING_PX = 32;
+const SEARCH_WIDTH_BORDER_ALLOWANCE_PX = 3;
+const SEARCH_MAX_WIDTH_PX = 360;
+const SEARCH_FOCUS_DELAY_MS = 10;
 
 export default function FilterBar({ filter, search, stageCounts, onSetFilter, onSetSearch }: FilterBarProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchExpanded, setSearchExpanded] = useState(false);
-  const [searchExpandedWidth, setSearchExpandedWidth] = useState(54);
+  const [searchExpandedWidth, setSearchExpandedWidth] = useState(SEARCH_COLLAPSED_WIDTH_PX);
   const filtersRef = useRef<HTMLDivElement>(null);
   const tabsRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -49,7 +54,7 @@ export default function FilterBar({ filter, search, stageCounts, onSetFilter, on
   function handleSearchContainerClick() {
     if (!searchExpanded) {
       setSearchExpanded(true);
-      setTimeout(() => searchInputRef.current?.focus(), 10);
+      setTimeout(() => searchInputRef.current?.focus(), SEARCH_FOCUS_DELAY_MS);
     }
   }
 
@@ -87,11 +92,8 @@ export default function FilterBar({ filter, search, stageCounts, onSetFilter, on
       const tabsNaturalWidth = Array.from(tabsEl.children).reduce((width, child) => (
         width + (child as HTMLElement).getBoundingClientRect().width
       ), 0);
-      const collapsedWidth = 54;
-      const sidePadding = 32;
-      const borderAllowance = 3;
-      const freeWidth = filtersWidth - tabsNaturalWidth - sidePadding - borderAllowance;
-      const next = Math.floor(Math.max(collapsedWidth, Math.min(360, freeWidth)));
+      const freeWidth = filtersWidth - tabsNaturalWidth - SEARCH_WIDTH_SIDE_PADDING_PX - SEARCH_WIDTH_BORDER_ALLOWANCE_PX;
+      const next = Math.floor(Math.max(SEARCH_COLLAPSED_WIDTH_PX, Math.min(SEARCH_MAX_WIDTH_PX, freeWidth)));
       setSearchExpandedWidth(next);
     };
 

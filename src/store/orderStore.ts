@@ -7,7 +7,9 @@ import {
   normalizeOrderFlow,
   isDeliveredHoldAction,
   DELIVERING_ETA_MS,
+  COMPLETE_AUTO_MS,
   VERIFY_PAY_LOCK_MS,
+  MAIN_ACTION_LOCK_MS,
   isExpiryFulfilledForReady,
 } from '@/lib/utils';
 
@@ -34,7 +36,6 @@ export interface IncomingState {
   pendingOrder: Order | null;
   remainingSec: number;
   hideAt: number | null;
-  lastDemoId: string | null;
   enabled: boolean;
 }
 
@@ -89,7 +90,6 @@ export type Action =
   | { type: 'OPEN_PRESCRIPTION'; orderId: string }
   | { type: 'CLOSE_PRESCRIPTION' }
   | { type: 'TOGGLE_INCOMING_ENABLED' }
-  | { type: 'SET_INCOMING_ENABLED'; enabled: boolean }
   | { type: 'SHOW_INCOMING_POPUP'; order: Order; hideAt: number }
   | { type: 'DISMISS_INCOMING_POPUP' }
   | { type: 'INCOMING_LEAVING_DONE' }
@@ -111,7 +111,7 @@ function initialState(): AppState {
     detailTab: 'fulfillment',
     verifyPayUnlockAt: Date.now() + VERIFY_PAY_LOCK_MS,
     barcode: { activeOrderId: null, queue: [], currentScanIdx: null, lastScannedIdx: null, total: 0, done: 0, isOpen: false },
-    incoming: { isVisible: false, isLeaving: false, orderId: null, pendingOrder: null, remainingSec: 5, hideAt: null, lastDemoId: null, enabled: true },
+    incoming: { isVisible: false, isLeaving: false, orderId: null, pendingOrder: null, remainingSec: 0, hideAt: null, enabled: true },
     toast: { message: '', icon: 'check', visible: false, leaving: false, key: 0 },
     rejectPopup: { isOpen: false, orderId: null, reason: '', mode: 'reject' },
     prescriptionPopup: { isOpen: false, orderId: null },
@@ -202,8 +202,8 @@ export function reducer(state: AppState, action: Action): AppState {
       if (o.actionType === 'ready' && !isExpiryFulfilledForReady(o)) {
         return { ...state, toast: makeToast(state.toast, 'Complete expiry for all items before ready for pickup', 'error') };
       }
-      if (['accept', 'handoff', 'deliver'].includes(o.actionType) && o.stageChangedAt && now - o.stageChangedAt < 1500) return state;
-      if ((o.actionType === 'handoff' || o.actionType === 'deliver') && o.readyForPickupAt && now - o.readyForPickupAt < 1500) return state;
+      if (['accept', 'handoff', 'deliver'].includes(o.actionType) && o.stageChangedAt && now - o.stageChangedAt < MAIN_ACTION_LOCK_MS) return state;
+      if ((o.actionType === 'handoff' || o.actionType === 'deliver') && o.readyForPickupAt && now - o.readyForPickupAt < MAIN_ACTION_LOCK_MS) return state;
       if (o.actionType === 'review') return state;
       if (o.actionType === 'transit' || isDeliveredHoldAction(o) || o.actionType === 'done') return state;
       if (o.actionType === 'accept') {
@@ -229,13 +229,13 @@ export function reducer(state: AppState, action: Action): AppState {
             done: unpacked.length ? 0 : total,
             isOpen: true,
           },
-          mainActionLockedUntil: now + 1500,
+          mainActionLockedUntil: now + MAIN_ACTION_LOCK_MS,
           toast: makeToast(state.toast, 'Reviewing order', 'search'),
         };
       }
       const orders = [...state.orders];
       const { msg, icon } = applyAdvance(orders, action.orderId);
-      return { ...state, orders, mainActionLockedUntil: now + 1500, toast: makeToast(state.toast, msg, icon) };
+      return { ...state, orders, mainActionLockedUntil: now + MAIN_ACTION_LOCK_MS, toast: makeToast(state.toast, msg, icon) };
     }
     case 'SHOW_TOAST': return { ...state, toast: makeToast(state.toast, action.message, action.icon) };
     case 'TOAST_LEAVING': return { ...state, toast: { ...state.toast, leaving: true } };
@@ -270,7 +270,6 @@ export function reducer(state: AppState, action: Action): AppState {
     case 'CLOSE_PRESCRIPTION': return { ...state, prescriptionPopup: { isOpen: false, orderId: null } };
 
     case 'TOGGLE_INCOMING_ENABLED': return { ...state, incoming: { ...state.incoming, enabled: !state.incoming.enabled }, toast: makeToast(state.toast, state.incoming.enabled ? 'New order receiving paused' : 'New order receiving enabled', 'notification') };
-    case 'SET_INCOMING_ENABLED': return { ...state, incoming: { ...state.incoming, enabled: action.enabled } };
     case 'SHOW_INCOMING_POPUP': {
       const remainingSec = Math.max(0, Math.ceil((action.hideAt - Date.now()) / 1000));
       return {
@@ -448,7 +447,7 @@ export function reducer(state: AppState, action: Action): AppState {
         }
         if (isDeliveredHoldAction(order)) {
           if (!order.deliveredAt) { order.deliveredAt = now; changed = true; }
-          if (now - (order.deliveredAt ?? now) >= 30 * 60 * 1000) {
+          if (now - (order.deliveredAt ?? now) >= COMPLETE_AUTO_MS) {
             order.status = 'completed'; order.phase = 6; order.actionType = 'done';
             delete order.deliveredAt; normalizeOrderFlow(order); changed = true;
           }

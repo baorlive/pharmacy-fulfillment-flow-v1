@@ -5,6 +5,7 @@ import type { Order } from '@/lib/types';
 import type { BarcodeState } from '@/store/orderStore';
 
 const SCAN_FILL_MOTION_MS = 520;
+const ACTIVE_ROW_SCROLL_RECHECK_MS = 180;
 interface BarcodePopupProps {
   order: Order;
   barcode: BarcodeState;
@@ -95,7 +96,7 @@ export default function BarcodePopup({ order, barcode, onClose, onCancel }: Barc
 
     keepActiveRowInView();
     const frame = requestAnimationFrame(keepActiveRowInView);
-    const secondPassId = setTimeout(keepActiveRowInView, 180);
+    const secondPassId = setTimeout(keepActiveRowInView, ACTIVE_ROW_SCROLL_RECHECK_MS);
     return () => {
       cancelAnimationFrame(frame);
       clearTimeout(secondPassId);
@@ -128,7 +129,7 @@ export default function BarcodePopup({ order, barcode, onClose, onCancel }: Barc
         <div className="barcode-progress-track">
           <div
             className="barcode-progress-fill"
-            style={{ width: `${progressPct}%` }}
+            style={{ ['--barcode-progress-pct' as string]: `${progressPct}%` }}
           />
         </div>
 

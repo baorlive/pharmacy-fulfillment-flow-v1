@@ -568,7 +568,7 @@ body {
 .barcode-cancel-btn:focus-visible { outline: var(--c-focus-size) solid var(--s-focus-ring); outline-offset: var(--c-focus-gap); }
 .barcode-popup-sub { font-size: var(--s-size-md); color: var(--s-text-secondary); margin-bottom: var(--s-space-3); }
 .barcode-progress-track { width: 100%; height: var(--s-space-3); min-height: var(--s-space-3); flex: 0 0 var(--s-space-3); border-radius: var(--s-radius-none); background: var(--s-border-default); overflow: hidden; margin-bottom: var(--s-space-2); }
-.barcode-progress-fill { width: 0%; height: 100%; border-radius: var(--s-radius-none); background: var(--s-action-primary); transition: width var(--s-motion-fast) var(--s-motion-ease-out); }
+.barcode-progress-fill { width: var(--barcode-progress-pct, 0%); height: 100%; border-radius: var(--s-radius-none); background: var(--s-action-primary); transition: width var(--s-motion-fast) var(--s-motion-ease-out); }
 .barcode-progress-footer { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-space-3); margin-bottom: var(--s-space-3); flex: 0 0 auto; }
 .barcode-progress-meta { display: grid; justify-items: start; align-content: start; gap: var(--s-space-1); font-family: var(--s-font-sans); font-size: var(--s-size-md); color: var(--s-text-muted); text-align: left; }
 .barcode-progress-meta span:first-child { font-size: var(--s-size-2xl); font-weight: var(--s-weight-bold); line-height: var(--s-leading-none); color: var(--s-text-primary); letter-spacing: var(--s-tracking-normal); }
@@ -598,11 +598,11 @@ body {
 .barcode-status-badge.scanned::before { content: '✓'; display: inline-block; font-size: var(--s-size-sm); font-weight: var(--s-weight-bold); line-height: var(--s-leading-none); }
 .barcode-popup-actions { display: flex; justify-content: flex-end; align-items: center; margin-top: var(--s-space-0); margin-left: auto; }
 .barcode-popup-actions-bottom { width: 100%; max-height: var(--c-control-height); flex: 0 0 var(--c-control-height); margin-top: var(--s-space-2); margin-left: var(--s-space-0); overflow: hidden; opacity: 1; transition: max-height var(--s-motion-collapse) var(--s-motion-ease-in), flex-basis var(--s-motion-collapse) var(--s-motion-ease-in), margin-top var(--s-motion-collapse) var(--s-motion-ease-in), opacity var(--s-motion-alpha) var(--s-motion-ease-in); }
-.barcode-cancel-btn-bottom { margin-right: auto; height: 54px; min-height: 54px; }
+.barcode-cancel-btn-bottom { margin-right: auto; height: var(--c-control-height); min-height: var(--c-control-height); }
 .barcode-action-btn { transition: opacity var(--s-motion-alpha) var(--s-motion-ease-inout), transform var(--s-motion-collapse) var(--s-motion-ease-inout); }
 .barcode-action-btn.is-visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
-.barcode-action-btn.is-hidden { opacity: 0; transform: translateY(6px); pointer-events: none; width: 0; min-width: 0; padding-left: 0; padding-right: 0; border-width: 0; margin: 0; overflow: hidden; }
-.barcode-cancel-btn-bottom.is-visible { min-width: 148px; }
+.barcode-action-btn.is-hidden { opacity: 0; transform: translateY(var(--c-barcode-action-hide-offset)); pointer-events: none; width: var(--s-space-0); min-width: var(--s-space-0); padding-left: var(--s-space-0); padding-right: var(--s-space-0); border-width: 0; margin: var(--s-space-0); overflow: hidden; }
+.barcode-cancel-btn-bottom.is-visible { min-width: var(--c-barcode-cancel-min-width); }
 .barcode-close-btn.is-scanning { width: auto; border: none; background: transparent; color: var(--s-text-muted); display: inline-flex; align-items: center; justify-content: flex-end; font-family: var(--s-font-sans); font-size: var(--s-size-md); font-weight: var(--s-weight-semibold); text-transform: uppercase; letter-spacing: var(--s-tracking-normal); height: auto; padding: var(--s-space-1) var(--s-space-2); cursor: default; pointer-events: none; }
 .barcode-close-btn.is-scanning::after { content: "..."; display: inline-block; margin-left: var(--s-space-1); width: 3ch; overflow: hidden; letter-spacing: var(--s-tracking-normal); animation: packing-dots 1s steps(4, end) infinite; }
 .barcode-close-btn.is-ready { background: var(--s-action-primary); border-color: var(--s-action-primary); color: var(--s-text-inverse); height: var(--c-control-height); min-height: var(--c-control-height); }

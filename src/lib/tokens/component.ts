@@ -82,6 +82,8 @@ export const componentCssVars = {
   '--c-preview-prescription-min-height': '300px',
   '--c-preview-prescription-line-height': '10px',
   '--c-barcode-exp-max-width': '90px',
+  '--c-barcode-action-hide-offset': '6px',
+  '--c-barcode-cancel-min-width': '148px',
 
   // Local stacking contexts
   '--c-z-row-active': '30',
