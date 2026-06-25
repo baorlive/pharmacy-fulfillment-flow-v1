@@ -1,223 +1,249 @@
 ---
 name: rxflow-orders
-description: Working guide for the RxFlow Orders pharmacy dashboard — covers the three-layer token pipeline, component conventions, state machine, and how to extend the codebase without breaking the design system invariants.
+description: Working guide for the Pharmacist Fulfillment repository and the RxFlow Orders dashboard. Use when reading, extending, or debugging the codebase, reducer flow, token pipeline, modal behavior, and design-system guardrails.
 ---
 
-## Project at a Glance
+## Project At A Glance
 
-**RxFlow Orders** is a Next.js 14 App Router pharmacy order management dashboard. A pharmacist uses it to receive, review, pack, and dispatch orders through a linear workflow.
+This repository is named **Pharmacist Fulfillment**. The product shown in the UI is **RxFlow Orders**: a Next.js 14 App Router dashboard for pharmacists to review, pack, dispatch, and complete medication orders.
 
-Tech stack: Next.js 14 · TypeScript · React 18 · useReducer (no external state lib) · CSS custom properties (no Tailwind, no CSS-in-JS).
+Tech stack:
 
-```
-rxflow-orders/
-  scripts/
-    render-token-css.cjs      ← Node script: writes src/app/tokens/*.css from TS token maps
-  src/
-    app/
-      globals.css             ← Component CSS rules — var(--s-*) and var(--c-*) only
-      layout.tsx              ← Imports token CSS in order, then globals.css
-      page.tsx                ← Mounts <Dashboard />
-      tokens/                 ← Generated — do not edit by hand
-        foundation.css        ← --f-* :root block
-        semantic.css          ← --s-* :root block
-        component.css         ← --c-* :root block
-    lib/
-      tokens/
-        foundation.ts         ← Raw primitives: colors, fonts, spacing, sizing, shadows, motion
-        semantic.ts           ← Meaning aliases: surface, text, action, status, spacing, sizing
-        component.ts          ← Scoped values: controls, rows, panels, modals, z-index
-      generateTokenCss.ts     ← CSS string generation from token maps
-      types.ts                ← All shared TypeScript types (Order, AppState, etc.)
-      data.ts                 ← ORDERS_SEED — 9 demo orders
-      utils.ts                ← Business logic, countdown math, workflow helpers
-    store/
-      orderStore.ts           ← useReducer store, all actions, AppState shape
-    components/
-      Dashboard.tsx           ← Root orchestrator: timers, toast loop, popup loop
-      layout/
-        Topbar.tsx
-      list/
-        ListPanel.tsx         ← Scrollable order list with scroll-shadow overlay
-        FilterBar.tsx         ← Status filter chips + stat counts + search
-        OrderRow.tsx          ← Single order row: name, status badge, rx badge, meta
-      detail/
-        DetailPanel.tsx       ← Right-side panel shell
-        BuyerCard.tsx         ← Buyer identity, contact, delivery info
-        DetailTabs.tsx        ← Fulfillment / Messages tab switcher
-        FulfillmentPane.tsx   ← User note, item list, summary, completed-by badge
-        MessagesPane.tsx      ← Chat thread + send form
-        ActionFooter.tsx      ← Main CTA, sub-actions, countdown, progress bar
-      modals/
-        IncomingPopup.tsx     ← New order drawer (bottom-right)
-        RejectPopup.tsx       ← Reject reason modal
-        PrescriptionPopup.tsx ← Prescription image viewer
-        BarcodePopup.tsx      ← Barcode scan flow per item
-      ui/
-        Icon.tsx              ← All SVG icons as typed React FCs; use <Icon name="..." />
-        Toast.tsx             ← Toast notification (animated, timed dismiss)
+- Next.js 14
+- React 18
+- TypeScript
+- Local `useReducer` store
+- CSS custom properties generated from TypeScript token maps
+
+Key repo paths:
+
+```text
+.
+├── dashboard-design-system.html
+├── catalog-sync.md
+├── docs/barcode-scanning-ux-pattern.md
+├── public/getnow.svg
+├── scripts/render-token-css.cjs
+├── src/app/
+│   ├── layout.tsx
+│   ├── page.tsx
+│   ├── globals.css
+│   └── tokens/
+├── src/components/
+│   ├── Dashboard.tsx
+│   ├── detail/
+│   ├── layout/
+│   ├── list/
+│   ├── modals/
+│   └── ui/
+├── src/lib/
+│   ├── data.ts
+│   ├── generateTokenCss.ts
+│   ├── types.ts
+│   ├── utils.ts
+│   └── tokens/
+└── src/store/orderStore.ts
 ```
 
----
+## Runtime Architecture
 
-## The Token Pipeline — Core Invariant
+The app entry is [`src/app/page.tsx`](src/app/page.tsx), which renders [`src/components/Dashboard.tsx`](src/components/Dashboard.tsx).
 
-Three layers, one rule: **each layer may only reference the layer above it**.
+`Dashboard.tsx` is the runtime orchestrator. It owns:
 
-```
-tokens.ts  →  globals.css :root  →  CSS component rules
-Foundation       Foundation vars       must use var(--*)
-  ↓                  ↓
-Semantic         Semantic vars         must use var(--f-*)
-  ↓                  ↓
-Component        Component vars        must use var(--f-*) or var(--s-*)
-```
+- a global 1-second timer that dispatches `TICK_TIMERS`
+- the incoming-order demo loop
+- the barcode scanning demo loop
+- toast visibility timing
+- modal mounting and reducer dispatch wiring
 
-**Foundation** (`--f-*`): raw primitives — hex colors, rgba, fonts, spacing, shadow strings, motion values. The only place raw values are allowed.
+All application state lives inside [`src/store/orderStore.ts`](src/store/orderStore.ts) through `useAppStore()`.
 
-**Semantic** (`--s-*`): UI meaning — `--s-action-primary`, `--s-error`, `--s-text-muted`. Must point to `var(--f-*)` only.
+## Store Model
 
-**Component** (`--c-*`): local decisions — `--c-row-bg`, `--c-tab-height`. Must point to `var(--f-*)` or `var(--s-*)` only.
+`AppState` includes:
 
-**CSS rules**: every color/shadow/radius property must use `var(--*)`. Zero bare hex or rgba allowed outside `:root`.
+- `orders`
+- `activeId`
+- `filter`
+- `search`
+- `detailTab`
+- `verifyPayUnlockAt`
+- `barcode`
+- `incoming`
+- `toast`
+- `rejectPopup`
+- `prescriptionPopup`
+- `mainActionLockedUntil`
 
-The only known exception: SVG `data:` URI fills (`fill='%23...'`) — CSS custom properties cannot be embedded inside data URIs.
+Important reducer actions:
 
-### Adding a new color
+- `SELECT_ORDER`
+- `SET_FILTER`
+- `SET_SEARCH`
+- `SET_DETAIL_TAB`
+- `HANDLE_MAIN_ACTION`
+- `SEND_MSG`
+- `OPEN_REJECT_POPUP`
+- `CONFIRM_REJECT`
+- `OPEN_PRESCRIPTION`
+- `TOGGLE_INCOMING_ENABLED`
+- `SHOW_INCOMING_POPUP`
+- `DISMISS_INCOMING_POPUP`
+- `INCOMING_LEAVING_DONE`
+- `FOCUS_INCOMING_ORDER`
+- `START_BARCODE`
+- `CLOSE_BARCODE`
+- `CONFIRM_BARCODE_PACKED`
+- `START_BARCODE_SCAN`
+- `COMPLETE_BARCODE_SCAN`
+- `TICK_TIMERS`
 
-1. Add the raw value to `foundation.color.*` in `tokens.ts`
-2. Add a `--f-*` CSS var in the `/* Foundation */` block in `globals.css :root`
-3. If it has a semantic meaning, add a `--s-*` var pointing to `var(--f-*)`
-4. If it's component-scoped, add a `--c-*` var pointing to `var(--f-*)` or `var(--s-*)`
-5. Use `var(--c-*)` or `var(--s-*)` in the CSS rule — never the foundation var directly unless no semantic/component layer applies
+## Seed Data And Demo Loops
 
----
+[`src/lib/data.ts`](src/lib/data.ts) seeds 9 demo orders.
 
-## Order Workflow State Machine
+The incoming-order popup is not backed by an API. `Dashboard.tsx` creates new demo orders by cloning seed templates from `RX-001`, `RX-002`, and `RX-008`, assigning a fresh ID, resetting timestamps, and reinserting the cloned order through reducer actions.
 
-Each order has `actionType` which drives the UI. The linear path:
+The barcode modal is also simulated:
 
-```
-verify-pay → accept → review → ready → handoff/deliver → transit/delivered-hold → complete → done
-```
+- the store builds a queue of unpacked item indexes
+- `START_BARCODE_SCAN` picks a random remaining index
+- `COMPLETE_BARCODE_SCAN` marks that item as packed
+- once the queue is empty, the modal can be confirmed and the order advances
 
-| actionType       | Main button          | Disabled? | Auto-advances?                      |
-|------------------|----------------------|-----------|-------------------------------------|
-| `verify-pay`     | Confirm Payment      | 10s lock  | No                                  |
-| `accept`         | Accept & Start Pack  | No        | Opens barcode popup → `review`      |
-| `review`         | Reviewing Order      | Yes       | Barcode completes → `ready`         |
-| `ready`          | Ready for Pickup     | Until expiry filled | Courier → `deliver`, walk-in → `handoff` |
-| `deliver`        | Order Sent           | No        | → `transit`                         |
-| `transit`        | Delivering           | Yes       | Timer (2 min) → `delivered-hold`   |
-| `delivered-hold` | Delivered            | Yes       | Timer (30 min) → `done`            |
-| `handoff`        | Confirm Pickup       | No        | → `done`                            |
-| `complete`       | Delivered            | Yes       | Manual → `done`                     |
-| `done`           | Final state          | Yes       | —                                   |
+## Order Workflow
 
-Key utilities in `utils.ts`:
-- `canonicalActionType(order)` — derives actionType from status+phase
-- `normalizeOrderFlow(order)` — call after mutating an order to keep actionType consistent
-- `isDeliveredHoldAction(order)` — checks the 30-min hold state
-- `isExpiryFulfilledForReady(order)` — blocks "ready" until expiry is set
+The order lifecycle is controlled by `status`, `phase`, `actionType`, and a few timestamps. The reducer and utility layer treat them together as a workflow state machine.
 
----
+High-level flow:
 
-## State — useReducer Store
-
-`src/store/orderStore.ts` exports `useAppStore()` which returns `{ state, dispatch }`.
-
-Key action types (discriminated union `Action`):
-- `SELECT_ORDER` · `SET_FILTER` · `SET_SEARCH` · `SET_DETAIL_TAB`
-- `HANDLE_MAIN_ACTION` — central action dispatcher per order workflow step
-- `SEND_MSG` · `OPEN_PRESCRIPTION` · `CLOSE_PRESCRIPTION`
-- `OPEN_REJECT_POPUP` · `SET_REJECT_REASON` · `CONFIRM_REJECT` · `CLOSE_REJECT_POPUP`
-- `SHOW_INCOMING_POPUP` · `DISMISS_INCOMING_POPUP` · `FOCUS_INCOMING_ORDER`
-- `START_BARCODE` · `START_BARCODE_SCAN` · `COMPLETE_BARCODE_SCAN` · `TICK_BARCODE_AUTOCLOSE` · `CLOSE_BARCODE`
-- `TICK_TIMERS` — fired every second, advances delivering/delivered-hold timers
-- `SHOW_TOAST` · `TOAST_LEAVING` · `HIDE_TOAST`
-
-`AppState` shape:
-```ts
-{ orders, activeId, filter, search, detailTab, verifyPayUnlockAt,
-  barcode: BarcodeState, incoming: IncomingState,
-  toast: ToastState, rejectPopup: RejectPopupState, prescriptionPopup }
-// ToastState includes a `key: number` that increments on every new toast —
-// Dashboard useEffect depends on it (not message) to reset the dismiss timer.
+```text
+verify-pay -> accept -> review -> preparing -> ready -> deliver/handoff
+deliver -> transit -> delivered-hold -> done
+handoff -> delivered-hold -> done
 ```
 
----
+Behavior notes that matter when editing the code:
 
-## Component Conventions
+- `verify-pay` is the unpaid-entry state and is locked for 10 seconds using `verifyPayUnlockAt`.
+- `accept` does not immediately mark the order ready. It opens barcode packing and flips the order into the passive `review` action.
+- `review` is effectively a modal-driven state. The main CTA stays disabled while barcode scanning runs.
+- `ready` in the reducer/type layer means "continue packing" for a `preparing` order. In the live UI, clicking the main CTA while `actionType === 'ready'` reopens the barcode modal instead of calling `applyAdvance`.
+- Confirming a fully scanned barcode session sets the order to `status: 'ready'` and changes the main action to `deliver` for courier orders or `handoff` for pickup orders.
+- `deliver` moves the order to `delivering`, which immediately canonicalizes to the passive `transit` action.
+- Pickup handoff currently marks the order as delivered and puts it into the same `delivered-hold` timer path used by courier orders.
+- `complete` exists in the action union and footer config, but the current reducer does not surface it as an active manual step. Delivered orders auto-complete after the hold timer.
 
-### New interactive components
-```tsx
-'use client'; // required for hooks, event handlers
+Core helpers in [`src/lib/utils.ts`](src/lib/utils.ts):
 
-// forwardRef when parent needs a DOM ref (scroll shadows, measurements)
-const MyComponent = forwardRef<HTMLDivElement, Props>(function MyComponent(props, ref) {
-  return <div ref={ref} className="my-component">...</div>;
-});
+- `canonicalPhase(order)`
+- `canonicalActionType(order)`
+- `normalizeOrderFlow(order)`
+- `isDeliveredHoldAction(order)`
+- `isExpiryFulfilledForReady(order)`
+- `getOrderStageKey(order)`
+- `workflowStatusMeta(order)`
+- `shippingMeta(order)`
+- `sortOrders(orders)`
+
+## Timing Constants
+
+These are the current live values from [`src/lib/utils.ts`](src/lib/utils.ts):
+
+| Constant | Value | Purpose |
+|---|---:|---|
+| `DELIVERING_ETA_MS` | 30s | `delivering` -> `delivered-hold` |
+| `SHIPPER_ARRIVAL_MS` | 2m | Shipper-arrival display countdown |
+| `PACKING_ETA_MS` | 2m | Packing display countdown |
+| `COMPLETE_AUTO_MS` | 30m | `delivered-hold` -> `done` |
+| `VERIFY_PAY_LOCK_MS` | 10s | Unpaid-order lockout before confirm |
+| `MAIN_ACTION_LOCK_MS` | 1.5s | Short guard against rapid repeated main actions |
+
+If you change any of these, update documentation that describes them.
+
+## Token Pipeline
+
+The design system is a strict three-layer pipeline:
+
+```text
+src/lib/tokens/foundation.ts
+  -> foundationCssVars
+src/lib/tokens/semantic.ts
+  -> semanticCssVars
+src/lib/tokens/component.ts
+  -> componentCssVars
+src/lib/generateTokenCss.ts
+scripts/render-token-css.cjs
+src/app/tokens/foundation.css
+src/app/tokens/semantic.css
+src/app/tokens/component.css
+src/app/layout.tsx
+src/app/globals.css
 ```
 
-### No inline styles — use CSS custom properties for dynamic values
-```tsx
-// Allowed: passing a runtime value as a CSS custom property
-<div style={{ ['--progress-pct' as string]: `${pct}%` }} />
-// CSS: .element::after { width: var(--progress-pct, 0%); }
-```
+Rules:
 
-### Icons
-All icons live in `src/components/ui/Icon.tsx`. Each is a named React FC that returns SVG `<path>` elements as JSX — no raw SVG string injection. Add new icons by extending the `ICONS` record with a named FC.
+- Raw colors, fonts, spacing, shadows, motion, and sizing values belong in `foundation.ts`.
+- `semanticCssVars` should reference `--f-*` only.
+- `componentCssVars` should reference `--s-*` or `--f-*`.
+- Component CSS in [`src/app/globals.css`](src/app/globals.css) should consume `--s-*` and `--c-*`.
+- Do not hand-edit generated files in `src/app/tokens/`.
 
-```tsx
-// Usage
-<Icon name="medication" />   // renders as <svg><path .../></svg>
+## Component Map
 
-// Adding a new icon in Icon.tsx:
-const NewIcon: FC = () => <path d="..." />;
-// Add to ICONS map: newIcon: NewIcon
-// Add to the Icon name union type
-```
+Main UI modules:
 
-### CSS class naming
-- Layout: `.app-root`, `.main`, `.list-panel`, `.detail-panel`
-- List: `.order-row`, `.row-body`, `.row-left`, `.row-right`, `.row-name`, `.row-status.status-*`
-- Detail: `.buyer-card`, `.detail-tabs`, `.detail-tab`, `.action-footer`, `.main-action`
-- Badges: `.pay-badge.paid|unpaid|cod`, `.mbadge.mb-new|prep|ready|done|rx|unpaid`
-- Modals: `.incoming-popup`, `.reject-popup`, `.prescription-popup`, `.barcode-popup`
-- State modifiers: `.is-on`, `.is-off`, `.is-passive`, `.has-progress`, `.is-visible`, `.is-leaving`, `.active`, `.scroll-shadow`
+- [`src/components/layout/Topbar.tsx`](src/components/layout/Topbar.tsx): branding, incoming-order toggle, session chrome
+- [`src/components/list/ListPanel.tsx`](src/components/list/ListPanel.tsx): left rail, filter/search bar, order list
+- [`src/components/list/FilterBar.tsx`](src/components/list/FilterBar.tsx): filter chips, "Others" dropdown, expanding search
+- [`src/components/list/OrderRow.tsx`](src/components/list/OrderRow.tsx): order card row
+- [`src/components/detail/DetailPanel.tsx`](src/components/detail/DetailPanel.tsx): detail shell, tabs, footer
+- [`src/components/detail/BuyerCard.tsx`](src/components/detail/BuyerCard.tsx): buyer identity and state summary
+- [`src/components/detail/FulfillmentPane.tsx`](src/components/detail/FulfillmentPane.tsx): notes, items, summary
+- [`src/components/detail/MessagesPane.tsx`](src/components/detail/MessagesPane.tsx): buyer/pharmacy chat thread
+- [`src/components/detail/ActionFooter.tsx`](src/components/detail/ActionFooter.tsx): main workflow CTA and secondary actions
+- [`src/components/modals/IncomingPopup.tsx`](src/components/modals/IncomingPopup.tsx): incoming-order preview
+- [`src/components/modals/RejectPopup.tsx`](src/components/modals/RejectPopup.tsx): reject/cancel confirmation
+- [`src/components/modals/PrescriptionPopup.tsx`](src/components/modals/PrescriptionPopup.tsx): prescription preview mockup
+- [`src/components/modals/BarcodePopup.tsx`](src/components/modals/BarcodePopup.tsx): scan simulation
+- [`src/components/ui/Icon.tsx`](src/components/ui/Icon.tsx): typed icon registry
+- [`src/components/ui/Toast.tsx`](src/components/ui/Toast.tsx): transient feedback
 
----
+## Before You Change Behavior
 
-## Timing Constants (from utils.ts)
+Read these files in this order:
 
-| Constant             | Value    | Purpose                                  |
-|----------------------|----------|------------------------------------------|
-| `DELIVERING_ETA_MS`  | 2 min    | transit → delivered-hold auto-transition |
-| `COMPLETE_AUTO_MS`   | 30 min   | delivered-hold → done auto-transition    |
-| `VERIFY_PAY_LOCK_MS` | 10 s     | lock window after payment confirm        |
-| `SHIPPER_ARRIVAL_MS` | 2 min    | shipper arrival countdown                |
-| `PACKING_ETA_MS`     | 2 min    | packing progress estimate                |
+1. [`src/lib/types.ts`](src/lib/types.ts)
+2. [`src/lib/utils.ts`](src/lib/utils.ts)
+3. [`src/store/orderStore.ts`](src/store/orderStore.ts)
+4. The component you are changing
+5. [`src/app/globals.css`](src/app/globals.css)
+6. [`skill-ui-design.md`](skill-ui-design.md) for UI work
 
----
+If the change affects catalog parity, also read:
 
-## Adding a New Feature — Checklist
+- [`dashboard-design-system.html`](dashboard-design-system.html)
+- [`catalog-sync.md`](catalog-sync.md)
 
-1. **Type first**: add any new fields to `Order`, `AppState`, or sub-interfaces in `types.ts`
-2. **Action**: add the action type to the `Action` union in `orderStore.ts`
-3. **Reducer**: handle the action in `reducer()` — call `normalizeOrderFlow()` after mutating an order
-4. **Token**: if new colors are needed, follow the token pipeline (foundation → semantic → component → CSS rule)
-5. **Component**: create the file in the appropriate folder, use `'use client'` if interactive, use only `var(--*)` for design values
-6. **Wire up**: dispatch from `Dashboard.tsx` or the appropriate parent
-7. **Build check**: `npm run build` must pass with zero errors
+## Safe Extension Checklist
 
----
+1. Add or update shared types in [`src/lib/types.ts`](src/lib/types.ts).
+2. Update reducer actions and behavior in [`src/store/orderStore.ts`](src/store/orderStore.ts).
+3. Call `normalizeOrderFlow()` after manual order mutations where workflow status can drift.
+4. Route new visual values through the token pipeline instead of adding raw CSS.
+5. Keep React behavior intact; do not replace live components with catalog-only markup.
+6. Regenerate tokens with `npm run tokens:css` when token sources change.
+7. Finish with `npm run build`.
 
-## Running Locally
+## Local Development
+
+Run from the repository root:
 
 ```bash
-cd rxflow-orders
 npm install
-npm run dev    # http://localhost:3000
-npm run build  # production build check
+npm run dev
+npm run build
 ```
+
+There is no automated test suite at the moment, so the production build is the main verification gate.

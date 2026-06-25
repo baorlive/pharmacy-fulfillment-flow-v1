@@ -12,12 +12,12 @@ RxFlow is a dense pharmacy-order workbench. Design for speed, legibility, and er
 Violating any of these is a bug. Fix before finishing.
 
 - Square surfaces only. Do not add visible radius to buttons, cards, modals, rows, chips, tabs, inputs, badges, dropdowns, scrollbars, or toasts. The logo dot is the only circular exception. Prefer no `border-radius`; use `var(--s-radius-none)` only when neutralizing inherited/browser radius.
-- Two fonts only. Use Plus Jakarta Sans (`var(--s-font-sans)`) for UI text and Source Code Pro (`var(--s-font-numeric)`) for order numbers, prices, counts, timestamps, and scan codes.
+- Two fonts only. Use Plus Jakarta Sans (`var(--s-font-sans)`) for UI text and DM Sans (`var(--s-font-numeric)`) for order numbers, prices, counts, timestamps, and scan codes.
 - Token pipeline is mandatory: `foundation.ts` -> `semantic.ts` -> `component.ts` -> generated CSS. `npm run tokens:css` must generate `foundation.css`, `semantic.css`, and `component.css`. Never skip a layer.
 - CSS rules consume only `--s-*` or `--c-*` custom properties. Never consume `--f-*` in component CSS.
 - No raw colors, shadows, font stacks, spacing, sizing, motion, opacity, or z-index in component rules. Allowed raw exceptions: `1px` borders, `2px` active indicators when matching existing selectors, viewport units, percentages, and SVG `data:` URI internals.
 - Spacing in `gap`, `padding`, and `margin` must use `var(--s-space-*)` or an existing component token. Do not write `gap: 8px`, `padding: 32px`, or `margin-bottom: 12px`.
-- Catalog mirrors the app. Token or component changes must land in both the app and `../dashboard-design-system.html` in the same change unless the user explicitly asks for only one surface.
+- Catalog mirrors the app. Token or component changes must land in both the app and `dashboard-design-system.html` in the same change unless the user explicitly asks for only one surface.
 - Preserve React behavior. Never replace an app component with copied catalog HTML; preserve props, handlers, ARIA, conditional rendering, state classes, and data flow.
 
 ## Industry Calibration
@@ -50,7 +50,7 @@ Before changing UI:
 3. Decide whether the change is a component variant, semantic state, layout adjustment, or product-flow problem. Do not add appearance-only variants when a semantic state or existing component pattern covers the need.
 4. Use existing tokens first: `--c-*` if available, then `--s-*`.
 5. If no token exists, add it through the full pipeline before writing the CSS rule.
-6. Patch the app selector first, then mirror the exact component state in `../dashboard-design-system.html`.
+6. Patch the app selector first, then mirror the exact component state in `dashboard-design-system.html`.
 7. Review `git diff` for broad selector damage, raw values, lost ARIA/handlers, and catalog drift.
 8. Run `npm run build`. For layout-sensitive work, also run the dev server and verify visually.
 
@@ -72,7 +72,7 @@ src/app/tokens/semantic.css    -> generated --s-* :root block
 src/app/tokens/component.css   -> generated --c-* :root block
 src/app/layout.tsx             -> imports token CSS in order, then globals.css
 src/app/globals.css            -> component rules, --s-* and --c-* only
-../dashboard-design-system.html -> standalone catalog reference
+dashboard-design-system.html -> standalone catalog reference
 ```
 
 Layer rules:
@@ -84,7 +84,7 @@ Layer rules:
 | Component | `src/lib/tokens/component.ts` | Scoped dimensions and layout values for controls, rows, panels, modals, z-index |
 | Generated | `src/app/tokens/*.css` | Generated `:root` vars. Do not edit by hand |
 | CSS | `src/app/globals.css` | Actual component selectors. Use `var(--s-*)` or `var(--c-*)` only |
-| Catalog | `../dashboard-design-system.html` | App mirror and visual reference; keep component specimens aligned |
+| Catalog | `dashboard-design-system.html` | App mirror and visual reference; keep component specimens aligned |
 
 Adding a token:
 
@@ -335,10 +335,10 @@ test -f src/app/tokens/foundation.css
 test -f src/app/tokens/semantic.css
 test -f src/app/tokens/component.css
 rg -n "generateFoundationCss|foundationCssVars" src/lib scripts
-rg -n "var\(--f-" src/app/globals.css ../dashboard-design-system.html
-rg -n "#[0-9A-Fa-f]{3,8}|rgba?\(" src/app/globals.css ../dashboard-design-system.html
-rg -n "gap: [0-9]|padding: [0-9]|margin: [0-9]" src/app/globals.css ../dashboard-design-system.html
-rg -n "border-radius" src/app/globals.css ../dashboard-design-system.html
+rg -n "var\(--f-" src/app/globals.css dashboard-design-system.html
+rg -n "#[0-9A-Fa-f]{3,8}|rgba?\(" src/app/globals.css dashboard-design-system.html
+rg -n "gap: [0-9]|padding: [0-9]|margin: [0-9]" src/app/globals.css dashboard-design-system.html
+rg -n "border-radius" src/app/globals.css dashboard-design-system.html
 rg -n "--cat-" src/app/globals.css
 ```
 
@@ -369,7 +369,7 @@ Before finishing:
 - [ ] No raw spacing in `gap`, `padding`, or `margin`.
 - [ ] No new visible `border-radius` except the logo dot.
 - [ ] Typography uses existing size, weight, leading, tracking, and font tokens.
-- [ ] Numeric/order data uses Source Code Pro.
+- [ ] Numeric/order data uses `var(--s-font-numeric)` (currently DM Sans).
 - [ ] Token additions completed through TS maps, generated CSS, consuming CSS, and catalog.
 - [ ] `npm run tokens:css` generated `foundation.css`, `semantic.css`, and `component.css`.
 - [ ] App and catalog specimens match for the changed component/state.

@@ -4,9 +4,9 @@ Use this when promoting a catalog visual tweak into the Next.js app, or when kee
 `dashboard-design-system.html` in sync after an app change.
 
 **Source paths:**
-- Catalog: `/Users/bao/Documents/pharmacy-sideexperience/dashboard-design-system.html`
-- App CSS: `rxflow-orders/src/app/globals.css`
-- App components: `rxflow-orders/src/components/**`
+- Catalog: `dashboard-design-system.html`
+- App CSS: `src/app/globals.css`
+- App components: `src/components/**`
 
 **Default source of truth:**
 - Next.js app is canonical for behavior, structure, React state, timers, event handlers.
@@ -21,8 +21,8 @@ State the class or component being synced (e.g. `.incoming-popup-summary`). Neve
 ```bash
 rg -n "\.incoming-popup-summary|incoming-popup-summary" \
   dashboard-design-system.html \
-  rxflow-orders/src/app/globals.css \
-  rxflow-orders/src/components
+  src/app/globals.css \
+  src/components
 ```
 
 ## Step 2 — Audit the Full Selector Family
@@ -30,7 +30,7 @@ rg -n "\.incoming-popup-summary|incoming-popup-summary" \
 Catalog drift always comes from partial syncs that copy one line but miss adjacent rules. Before patching, grep both files for every rule in the selector family:
 
 ```bash
-rg -n "\.row-item-chip" rxflow-orders/src/app/globals.css dashboard-design-system.html
+rg -n "\.row-item-chip" src/app/globals.css dashboard-design-system.html
 ```
 
 Compare side-by-side. Every rule in the app must exist in the catalog with identical declarations. Missing catalog rules are bugs — add them in the same change.
@@ -90,13 +90,13 @@ Do not use negative margins when text content must remain aligned to the card co
 ## Step 6 — Diff After Every Patch
 
 ```bash
-git diff -- rxflow-orders/src/app/globals.css rxflow-orders/src/components dashboard-design-system.html
+git diff -- src/app/globals.css src/components dashboard-design-system.html
 ```
 
 Watch for global reset damage:
 ```bash
 rg -n "padding: 0 0 32px|margin: -32px|border-radius" \
-  rxflow-orders/src/app/globals.css dashboard-design-system.html
+  src/app/globals.css dashboard-design-system.html
 ```
 
 Only expected matches should remain. `.incoming-popup-summary { padding: 0 0 32px; }` may be valid when explicitly requested; `*, *::before, *::after { padding: 0 0 32px; }` is always broken.
@@ -104,7 +104,7 @@ Only expected matches should remain. `.incoming-popup-summary { padding: 0 0 32p
 ## Step 7 — Verify the App
 
 ```bash
-cd /Users/bao/Documents/pharmacy-sideexperience/rxflow-orders
+cd /path/to/pharmacist-fulfillment
 npm run build
 # For layout-sensitive changes, also:
 npm run dev
@@ -143,7 +143,7 @@ After the app is correct, sync the final selector shape into `dashboard-design-s
 
 **Preview the catalog locally:**
 ```bash
-cd /Users/bao/Documents/pharmacy-sideexperience
+cd /path/to/pharmacist-fulfillment
 python3 -m http.server 8000
 # open http://localhost:8000/dashboard-design-system.html
 ```
